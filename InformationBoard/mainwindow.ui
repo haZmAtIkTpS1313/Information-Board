@@ -1,0 +1,800 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>890</width>
+    <height>757</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Хорошо, можешь тогда сказать что нужно сделать в дизайне под код который ты присылал мне раньше</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+    background-color: #f0f0f0;
+}
+
+QGroupBox {
+    font-weight: bold;
+    border: 2px solid #cccccc;
+    border-radius: 5px;
+    margin-top: 10px;
+    padding-top: 10px;
+    background-color: white;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 5px 0 5px;
+    color: #2c3e50;
+}
+
+QPushButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    min-height: 30px;
+}
+
+QPushButton:hover {
+    background-color: #2980b9;
+}
+
+QPushButton:pressed {
+    background-color: #1c5a8a;
+}
+
+QPushButton[text^=&quot;📰&quot;], 
+QPushButton[text^=&quot;☀️&quot;], 
+QPushButton[text^=&quot;🕐&quot;], 
+QPushButton[text^=&quot;🏢&quot;] {
+    background-color: #27ae60;
+    font-size: 14px;
+}
+
+QPushButton[text^=&quot;📰&quot;]:hover,
+QPushButton[text^=&quot;☀️&quot;]:hover,
+QPushButton[text^=&quot;🕐&quot;]:hover,
+QPushButton[text^=&quot;🏢&quot;]:hover {
+    background-color: #229954;
+}
+
+QLineEdit {
+    padding: 8px;
+    border: 2px solid #bdc3c7;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+}
+
+QLineEdit:focus {
+    border-color: #3498db;
+}
+
+QTabWidget::pane {
+    border: 2px solid #cccccc;
+    border-radius: 5px;
+    background-color: white;
+}
+
+QTabBar::tab {
+    background-color: #e0e0e0;
+    padding: 10px 20px;
+    margin-right: 2px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+QTabBar::tab:selected {
+    background-color: white;
+    border-bottom: 3px solid #3498db;
+}
+
+QTabBar::tab:hover {
+    background-color: #d0d0d0;
+}
+
+QRadioButton, QCheckBox {
+    spacing: 5px;
+    color: #2c3e50;
+}
+
+QRadioButton::indicator, QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+}
+
+QComboBox {
+    padding: 5px;
+    border: 2px solid #bdc3c7;
+    border-radius: 4px;
+    background-color: white;
+    min-height: 25px;
+}
+
+QComboBox:hover {
+    border-color: #3498db;
+}
+
+QStatusBar {
+    background-color: #2c3e50;
+    color: white;
+    font-weight: bold;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>-4</x>
+      <y>-1</y>
+      <width>801</width>
+      <height>751</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>500</width>
+      <height>600</height>
+     </size>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Управление</string>
+     </attribute>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QGroupBox" name="textGroup">
+        <property name="title">
+         <string>Текстовые сообщения </string>
+        </property>
+        <widget class="QLabel" name="label">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>15</y>
+           <width>201</width>
+           <height>71</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Введите текст:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="textInput">
+         <property name="geometry">
+          <rect>
+           <x>190</x>
+           <y>30</y>
+           <width>351</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="placeholderText">
+          <string>Например: Срочная новость...</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="showTextButton">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>120</y>
+           <width>181</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Показать текст на доске</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="clearBoardButton">
+         <property name="geometry">
+          <rect>
+           <x>200</x>
+           <y>120</y>
+           <width>141</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Очистить доску</string>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="windowGroup">
+        <property name="title">
+         <string>Управление окнами</string>
+        </property>
+        <widget class="QPushButton" name="showBoardButton">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>141</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Показать окно доски</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="fullscreenButton">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>30</y>
+           <width>141</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Полный экран</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="alwaysOnTopCheck">
+         <property name="geometry">
+          <rect>
+           <x>310</x>
+           <y>30</y>
+           <width>181</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Поверх всех окон</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="toggleTickerButton">
+         <property name="geometry">
+          <rect>
+           <x>300</x>
+           <y>90</y>
+           <width>131</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>кнопка переключения часов</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="toggleWeatherButton">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>141</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>быстрого прогнозирования погоды</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="toggleClockButton">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>90</y>
+           <width>131</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Переключение часов
+</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="toggleLogoButton">
+         <property name="geometry">
+          <rect>
+           <x>440</x>
+           <y>90</y>
+           <width>121</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>toggleLogoButton</string>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="quickGroup">
+        <property name="title">
+         <string>Быстрые команды</string>
+        </property>
+        <widget class="QPushButton" name="quickNewsButton">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>141</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Новости</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="quickWeatherButton">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>20</y>
+           <width>141</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Погода</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="quickTimeButton">
+         <property name="geometry">
+          <rect>
+           <x>310</x>
+           <y>20</y>
+           <width>141</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Время</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="quickLogoButton">
+         <property name="geometry">
+          <rect>
+           <x>460</x>
+           <y>20</y>
+           <width>141</width>
+           <height>46</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Логотип</string>
+         </property>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Оформление</string>
+     </attribute>
+     <widget class="QGroupBox" name="colorGroup">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>0</y>
+        <width>531</width>
+        <height>161</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Цвет фона</string>
+      </property>
+      <widget class="QWidget" name="layoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>502</width>
+         <height>48</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="setCustomColorButton">
+          <property name="text">
+           <string>Выбрать цвет</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="setRedBackgroundButton">
+          <property name="text">
+           <string>Красный фон</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="setBlueBackgroundButton">
+          <property name="text">
+           <string>Синий фон</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="setGreenBackgroundButton">
+          <property name="text">
+           <string>Зеленый фон</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="setBlackBackgroundButton">
+          <property name="text">
+           <string>Черный фон</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="sizeGroup">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>159</y>
+        <width>531</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Размер текста</string>
+      </property>
+      <widget class="QRadioButton" name="textSmall">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>151</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Маленький (24px)</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="textMedium">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>70</y>
+         <width>141</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Средний (48px)</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="textHuge">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>80</y>
+         <width>111</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Огромный (96px)</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="textLarge">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>30</y>
+         <width>141</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Крупный (72px)</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="styleGroup">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>290</y>
+        <width>541</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Стиль текста</string>
+      </property>
+      <widget class="QComboBox" name="fontFamilyCombo">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>131</width>
+         <height>39</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Arial</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Times New Roman</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Courier New</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Verdana</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Новый элемент</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QCheckBox" name="boldTextCheck">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>80</y>
+         <width>151</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Жирный</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="italicTextCheck">
+       <property name="geometry">
+        <rect>
+         <x>150</x>
+         <y>80</y>
+         <width>131</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Курсив</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>Медиа</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_4">
+     <attribute name="title">
+      <string>Настройки</string>
+     </attribute>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>801</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>GroupBox</string>
+      </property>
+      <widget class="QPushButton" name="saveDesignButton">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>20</y>
+         <width>151</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Сохранить настройки</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="loadDesignButton">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>20</y>
+         <width>151</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Загрузить настройки</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="resetDesignButton">
+       <property name="geometry">
+        <rect>
+         <x>360</x>
+         <y>20</y>
+         <width>141</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Сбросить к defaults</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="addElement">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>20</y>
+         <width>121</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>addElement</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="removeElement">
+       <property name="geometry">
+        <rect>
+         <x>650</x>
+         <y>20</y>
+         <width>131</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>removeElement</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>460</y>
+        <width>781</width>
+        <height>80</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>GroupBox</string>
+      </property>
+      <widget class="QPushButton" name="clearDisegner">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>20</y>
+         <width>131</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>clearDisegner</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="dragStartPosition">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>20</y>
+         <width>131</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>dragStartPosition</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="previewDesignButton">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>20</y>
+         <width>131</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string> Предпросмотр</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="applyDesignButton">
+       <property name="geometry">
+        <rect>
+         <x>440</x>
+         <y>20</y>
+         <width>141</width>
+         <height>46</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Применить дизайн</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="resetBoardButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>90</y>
+        <width>141</width>
+        <height>46</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Reset Board </string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="setLogoImageButton">
+      <property name="geometry">
+       <rect>
+        <x>470</x>
+        <y>90</y>
+        <width>141</width>
+        <height>46</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Set logo Image</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="loadConfigButton">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>90</y>
+        <width>141</width>
+        <height>46</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Load config</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="saveConfigButton">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>90</y>
+        <width>141</width>
+        <height>46</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save config</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
