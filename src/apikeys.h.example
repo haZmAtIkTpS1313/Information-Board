@@ -1,0 +1,14 @@
+#ifndef APIKEYS_H
+#define APIKEYS_H
+
+// Ключ API по умолчанию — доска работает "из коробки", без обязательного
+// похода в "Настройки". Пользователь всё ещё может переопределить его через
+// диалог настроек (хранится в ~/.InformationBoard/settings.ini).
+//
+// Получить бесплатный ключ: https://openweathermap.org/api
+// Впишите свой ключ ниже и переименуйте этот файл в apikeys.h
+// (при сборке CMake делает это автоматически, если apikeys.h ещё нет).
+
+static const char *kDefaultWeatherApiKey = "";
+
+#endif // APIKEYS_H

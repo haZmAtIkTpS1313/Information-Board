@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>890</width>
+    <height>757</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Консоль управления информационной доской</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* ==================== СВЕТЛАЯ ПРОФЕССИОНАЛЬНАЯ ТЕМА ==================== */
+
+/* Основное окно */
+QMainWindow {
+    background-color: #f4f6f9;
+}
+
+/* Группы */
+QGroupBox {
+    font-weight: 600;
+    border: 1px solid #e2e6ea;
+    border-radius: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    background-color: #ffffff;
+    color: #1a2634;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 16px;
+    padding: 0 8px;
+    color: #5b6f82;
+    font-weight: 500;
+}
+
+/* Кнопки */
+QPushButton {
+    background-color: #ffffff;
+    color: #2c3e50;
+    border: 1px solid #d0d5db;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    min-height: 28px;
+}
+
+QPushButton:hover {
+    background-color: #f0f2f5;
+    border-color: #b0b7bf;
+}
+
+QPushButton:pressed {
+    background-color: #e4e7eb;
+}
+
+/* Поля ввода */
+QLineEdit {
+    background-color: #ffffff;
+    color: #1a2634;
+    border: 1px solid #d0d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    selection-background-color: #cbd5e1;
+}
+
+QLineEdit:focus {
+    border-color: #6c8fb0;
+    outline: none;
+}
+
+/* Вкладки */
+QTabWidget::pane {
+    border: 1px solid #e2e6ea;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+QTabBar::tab {
+    background-color: #f8f9fc;
+    color: #5b6f82;
+    padding: 8px 24px;
+    margin-right: 2px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    font-weight: 500;
+}
+
+QTabBar::tab:selected {
+    background-color: #ffffff;
+    color: #2c3e50;
+    border-bottom: 2px solid #5a7d9a;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #eef2f6;
+    color: #2c3e50;
+}
+
+/* Радиокнопки и чекбоксы */
+QRadioButton, QCheckBox {
+    spacing: 8px;
+    color: #2c3e50;
+}
+
+QRadioButton::indicator, QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+}
+
+QRadioButton::indicator:unchecked, QCheckBox::indicator:unchecked {
+    background-color: #ffffff;
+    border: 1px solid #b0b7bf;
+    border-radius: 4px;
+}
+
+QRadioButton::indicator:checked, QCheckBox::indicator:checked {
+    background-color: #5a7d9a;
+    border: 1px solid #5a7d9a;
+    border-radius: 4px;
+}
+
+/* Выпадающие списки */
+QComboBox {
+    background-color: #ffffff;
+    color: #2c3e50;
+    border: 1px solid #d0d5db;
+    border-radius: 6px;
+    padding: 6px 12px;
+    min-height: 28px;
+}
+
+QComboBox:hover {
+    border-color: #b0b7bf;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QComboBox::down-arrow {
+    image: none;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #5b6f82;
+    margin-right: 6px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #ffffff;
+    border: 1px solid #d0d5db;
+    selection-background-color: #eef2f6;
+    selection-color: #2c3e50;
+}
+
+/* Спинбоксы (для размера текста) */
+QSpinBox {
+    background-color: #ffffff;
+    color: #2c3e50;
+    border: 1px solid #d0d5db;
+    border-radius: 6px;
+    padding: 6px 10px;
+    min-height: 28px;
+}
+
+QSpinBox:focus {
+    border-color: #6c8fb0;
+}
+
+/* Виджет выбора шрифта */
+QFontComboBox {
+    background-color: #ffffff;
+    color: #2c3e50;
+    border: 1px solid #d0d5db;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+/* Статусбар */
+QStatusBar {
+    background-color: #f8f9fc;
+    color: #6c757d;
+    border-top: 1px solid #e2e6ea;
+}
+
+/* Специальные кнопки (быстрые команды) */
+QPushButton[text^=&quot;📰&quot;],
+QPushButton[text^=&quot;☀️&quot;],
+QPushButton[text^=&quot;🕐&quot;],
+QPushButton[text^=&quot;🏢&quot;],
+QPushButton[text^=&quot;⚙️&quot;] {
+    background-color: #eef2f6;
+    border-color: #cbd5e1;
+}
+
+QPushButton[text^=&quot;📰&quot;]:hover,
+QPushButton[text^=&quot;☀️&quot;]:hover,
+QPushButton[text^=&quot;🕐&quot;]:hover,
+QPushButton[text^=&quot;🏢&quot;]:hover,
+QPushButton[text^=&quot;⚙️&quot;]:hover {
+    background-color: #e2e8f0;
+    border-color: #b0b7bf;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="centralLayout">
+    <property name="margin">
+     <number>8</number>
+    </property>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="minimumSize">
+       <size>
+        <width>500</width>
+        <height>600</height>
+       </size>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Управление</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QGroupBox" name="textGroup">
+          <property name="title">
+           <string>Текстовые сообщения</string>
+          </property>
+          <layout class="QVBoxLayout" name="textGroupLayout">
+           <item>
+            <layout class="QHBoxLayout" name="textInputLayout">
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Введите текст:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="textInput">
+               <property name="placeholderText">
+                <string>Например: Срочная новость...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="textButtonsLayout">
+             <item>
+              <widget class="QPushButton" name="showTextButton">
+               <property name="minimumHeight">
+                <number>40</number>
+               </property>
+               <property name="text">
+                <string>Показать текст на доске</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="clearBoardButton">
+               <property name="minimumHeight">
+                <number>40</number>
+               </property>
+               <property name="text">
+                <string>Очистить доску</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="windowGroup">
+          <property name="title">
+           <string>Управление окнами</string>
+          </property>
+          <layout class="QGridLayout" name="windowGroupLayout">
+           <item row="0" column="0">
+            <widget class="QPushButton" name="showBoardButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Показать окно доски</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="fullscreenButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Полный экран</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QCheckBox" name="alwaysOnTopCheck">
+             <property name="text">
+              <string>Поверх всех окон</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="quickWeatherButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>☀️ Погода</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="quickTimeButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>🕐 Время</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="quickLogoButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>🏢 Логотип</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="settingsButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>⚙️ Настройки</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="emergencyGroup">
+          <property name="title">
+           <string>Экстренный режим</string>
+          </property>
+          <layout class="QVBoxLayout" name="emergencyGroupLayout">
+           <item>
+            <widget class="QPushButton" name="emergencyButton">
+             <property name="minimumHeight">
+              <number>52</number>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QPushButton { background-color: #c0392b; color: white; font-weight: bold; font-size: 14px; border: 1px solid #922b21; }
+QPushButton:hover { background-color: #a93226; }
+QPushButton:pressed { background-color: #922b21; }</string>
+             </property>
+             <property name="text">
+              <string>🚨 Включить экстренный режим</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacerTab1">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Оформление</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_appearance">
+        <item>
+         <widget class="QGroupBox" name="colorGroup">
+          <property name="title">
+           <string>Цвет фона</string>
+          </property>
+          <layout class="QHBoxLayout" name="colorGroupLayout">
+           <item>
+            <widget class="QPushButton" name="setCustomColorButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Выбрать цвет</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="setRedBackgroundButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Красный фон</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="setBlueBackgroundButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Синий фон</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="setGreenBackgroundButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Зеленый фон</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="setBlackBackgroundButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Черный фон</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="sizeGroup">
+          <property name="title">
+           <string>Размер текста</string>
+          </property>
+          <layout class="QGridLayout" name="sizeGroupLayout">
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="textSmall">
+             <property name="text">
+              <string>Маленький (24px)</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QRadioButton" name="textMedium">
+             <property name="text">
+              <string>Средний (48px)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="textLarge">
+             <property name="text">
+              <string>Крупный (72px)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QRadioButton" name="textHuge">
+             <property name="text">
+              <string>Огромный (96px)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QSpinBox" name="textSizeSpin">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>200</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="applyTextSizeButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Применить размеры</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="styleGroup">
+          <property name="title">
+           <string>Стиль текста</string>
+          </property>
+          <layout class="QGridLayout" name="styleGroupLayout">
+           <item row="0" column="0">
+            <widget class="QFontComboBox" name="fontCombo">
+             <property name="editable">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="applyFontButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Применить шрифт</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="boldCheck">
+             <property name="text">
+              <string>Жирный</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="italicCheck">
+             <property name="text">
+              <string>Курсив</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QCheckBox" name="underlineCheck">
+             <property name="text">
+              <string>Подчеркнуть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QCheckBox" name="strikeoutCheck">
+             <property name="text">
+              <string>Зачеркнуть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="applyFontStyleButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Применить стиль</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacerTab2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_5">
+       <attribute name="title">
+        <string>База Данных</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="tab_4">
+       <attribute name="title">
+        <string>Дизайн</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_design_tab">
+        <item>
+         <widget class="QGroupBox" name="groupBox_2">
+          <property name="title">
+           <string>Макет (перетаскивание элементов ниже)</string>
+          </property>
+          <layout class="QHBoxLayout" name="groupBox2Layout">
+           <item>
+            <widget class="QPushButton" name="applyDesignButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Применить дизайн</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="resetDesignButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Сбросить макет</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="saveDesignButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Сохранить</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="loadDesignButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Загрузить</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_3">
+          <property name="title">
+           <string>Видимость элементов и логотип</string>
+          </property>
+          <layout class="QGridLayout" name="groupBox3Layout">
+           <item row="0" column="0">
+            <widget class="QPushButton" name="toggleLogoButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Скрыть логотип</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="toggleTimeButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Скрыть время</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="toggleWeatherButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Скрыть погоду</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="toggleTickerButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Скрыть бегущую строку</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="setLogoImageButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Выбрать логотип</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="saveConfigButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Сохранить конфигурацию</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="loadConfigButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Загрузить конфигурацию</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QPushButton" name="resetBoardButton">
+             <property name="minimumHeight">
+              <number>40</number>
+             </property>
+             <property name="text">
+              <string>Сбросить конфигурацию</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_6">
+       <attribute name="title">
+        <string>Расписание</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="tab_7">
+       <attribute name="title">
+        <string>Объявления</string>
+       </attribute>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
