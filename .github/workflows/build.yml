@@ -7,57 +7,48 @@ on:
 
 jobs:
   build-linux:
-    name: Build on Linux
+    name: Build Release on Linux
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Install Qt5
         run: |
           sudo apt-get update
           sudo apt-get install -y qtbase5-dev qtmultimedia5-dev libqt5sql5-sqlite cmake g++
 
+      - name: Configure (Release)
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
       - name: Build
-        run: |
-          mkdir build
-          cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          cmake --build .
+        run: cmake --build build
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: InformationBoard-Linux
           path: build/InformationBoard
           retention-days: 14
 
   build-windows:
-    name: Build on Windows
+    name: Build Release on Windows
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '5.15.2'
-          arch: 'win64_msvc2019_64'
-          cache: true
+      - name: Install Qt via aqt
+        run: |
+          pip install aqtinstall
+          python -m aqt install-qt windows desktop 5.15.2 win64_msvc2019_64 --outputdir D:\Qt
 
-      - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Configure
+        run: cmake -B build -DCMAKE_PREFIX_PATH=D:\Qt\5.15.2\msvc2019_64
 
-      - name: Build
+      - name: Build (Release)
         run: cmake --build build --config Release
 
       - name: Deploy Qt libraries
-        run: windeployqt --release --no-translations build/Release/InformationBoard.exe
-
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: InformationBoard-Windows
-          path: build/Release/
-          retention-days: 14
+        run: |
+          $env:PATH = "D:\Qt\5.15.2\msvc2
