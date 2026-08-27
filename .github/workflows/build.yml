@@ -49,13 +49,28 @@ jobs:
       - name: Build (Release)
         run: cmake --build build --config Release
 
-      - name: Deploy Qt libraries
+      - name: Prepare distribution folder
         run: |
-          $env:PATH = "D:\Qt\5.15.2\msvc2019_64\bin;" + $env:PATH
-          windeployqt --release --no-translations build\Release\InformationBoard.exe
+          mkdir dist
+          $exePath = Get-ChildItem -Path build -Recurse -Filter "InformationBoard.exe" | Select-Object -First 1
+          if ($exePath) {
+            Copy-Item $exePath.FullName -Destination dist\
+            Write-Host "Found EXE at: $($exePath.FullName)"
+          } else {
+            Write-Error "InformationBoard.exe not found!"
+            exit 1
+          }
+
+      - name: Deploy Qt libraries
+        shell: cmd
+        run: D:\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe --release --no-translations dist\InformationBoard.exe
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: InformationBoard-Windows
+          path: dist/
+          retention-days: 14
         with:
           name: InformationBoard-Windows
           path: build/Release/
