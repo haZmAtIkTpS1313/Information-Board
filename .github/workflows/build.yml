@@ -71,7 +71,4 @@ jobs:
           name: InformationBoard-Windows
           path: dist/
           retention-days: 14
-        with:
-          name: InformationBoard-Windows
-          path: build/Release/
           retention-days: 14
