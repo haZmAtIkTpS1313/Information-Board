@@ -64,6 +64,7 @@ add_executable(InformationBoard
     src/apikeys.h
     src/mainwindow.ui
 )
+
 target_link_libraries(InformationBoard PRIVATE
     Qt5::Core
     Qt5::Widgets
