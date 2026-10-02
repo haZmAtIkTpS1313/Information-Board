@@ -1,5 +1,6 @@
 
 #include "databasewidget.h"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSplitter>
@@ -13,6 +14,16 @@
 #include <QHeaderView>
 #include <QInputDialog>
 #include <QDebug>
+#include <QFileDialog>
+#include <QTextStream>
+#include <QFile>
+#include <QRegularExpression>
+
+#include <qfiledialog.h>
+#include <qinputdialog.h>
+#include <qmessagebox.h>
+#include <qregularexpression.h>
+
 
 DatabaseWidget::DatabaseWidget(DatabaseManager *dbManager, QWidget *parent)
     : QWidget(parent)
@@ -29,6 +40,8 @@ DatabaseWidget::~DatabaseWidget()
 
 void DatabaseWidget::setupUI()
 {
+    QPushButton *importExcelBth = new QPushButton("Импорт из Excel (CSV)");
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
     QGroupBox *createGroup = new QGroupBox("Создать новую таблицу", this);
@@ -75,6 +88,7 @@ void DatabaseWidget::setupUI()
     buttonLayout->addWidget(deleteRowBtn);
     buttonLayout->addWidget(showOnBoardBtn);
     buttonLayout->addWidget(refreshBtn);
+    buttonLayout->addWidget(importExcelBth);
 
     rightLayout->addLayout(buttonLayout);
 
@@ -99,6 +113,7 @@ void DatabaseWidget::setupUI()
     connect(showOnBoardBtn, &QPushButton::clicked, this, &DatabaseWidget::onShowOnBoard);
     connect(refreshBtn, &QPushButton::clicked, this, &DatabaseWidget::onRefreshTable);
     connect(dataTable, &QTableWidget::cellChanged, this, &DatabaseWidget::onCellChanged);
+    connect(importExcelBth, &QPushButton::clicked, this, &DatabaseWidget::onImportFromExcel);
 }
 
 void DatabaseWidget::loadTablesList()
@@ -267,6 +282,90 @@ void DatabaseWidget::onCellChanged(int row, int column)
         QMessageBox::warning(this, "Ошибка", "Не удалось сохранить изменения");
         loadTableData(currentTable);   // откатываем к данным из БД
     }
+}
+
+void DatabaseWidget::onImportFromExcel()
+{
+    // Выбор файла
+    QString filename = QFileDialog::getOpenFileName(
+        this, 
+        "Выберите файл экспорта из Excel",
+        QString(),
+        "CSV файлы (*.csv);;Текст с табудяцией (*.txt, *.tsv);;Все файлы (*)"
+    );
+    if (filename.isEmpty()) return;
+
+    // Имя новой таблицы
+    QString tableName = QInputDialog::getText(
+        this, "Имя таблицы",
+        "Введите имя таблицы для импорта: "
+    );
+    if (tableName.isEmpty()) return;
+
+    // Открываем файл
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, "Ошибка", "Не удалось открыть файл: " + filename);
+        return;
+    }
+
+    QTextStream in(&file);
+    in.setCodec("UTF-8");
+
+    QStringList columns;
+    QList<QList<QVariant>> rows;
+    int rowIdx = 0;
+
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.isEmpty()) continue;
+
+        QStringList values = line.split(";");
+
+        for (int i = 0; i < values.size(); ++i) {
+            values[i] = values[i].remove(QRegularExpression("^\"|\"$")).trimmed();
+        }
+        if (rowIdx == 0) {
+            columns = values;
+        } else {
+            QList<QVariant> row;
+            for (const QString &val : values) {
+                row.append(QVariant(val));
+            }
+            rows.append(row);
+        }
+        rowIdx++;
+    }
+    file.close();
+
+    if (columns.isEmpty()) {
+        QMessageBox::warning(this, "Ошибка", "Файл пуст или не удалось прочитать заголовок");
+        return;
+    }
+
+    // Создаем таблицу в БД
+    if (!dbManager->createTable(tableName, columns)) {
+        QMessageBox::critical(this, "Ошибка", 
+            "Не удалось создать таблицу '" + tableName + "'. Возможно, имя уже занято.");
+        return;
+    }
+
+    //Вставляем данные 
+    int successCount = 0;
+    for (const auto &row : rows) {
+        if (dbManager->insertRow(tableName, row)) {
+            successCount++;
+        }
+    }
+
+    // Результат
+    QMessageBox::information(this, "Импорт завершён",
+    QString("Импортировано %1 строк в таблицу '%2'")
+        .arg(successCount)
+        .arg(tableName));
+
+    loadTablesList();
+    onTableSelected(tableName);
 }
 
 void DatabaseWidget::onShowOnBoard()

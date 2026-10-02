@@ -16,7 +16,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class DatabaseManager;   // forward declaration
+class DatabaseManager;   
 class QMediaPlayer;
 
 class MainWindow : public QMainWindow
@@ -85,6 +85,8 @@ private slots:
     void onEmergencyModeChanged(bool active);
 
     void onSlideshowImageChanged(const QString &imagePath);
+
+    void handleRestoreBoardButtonClicked();
 
 private:
     Ui::MainWindow *ui;

@@ -7,6 +7,15 @@
 #include <QGridLayout>
 #include "draggableelement.h"
 
+struct ShiftControll{
+    QString id_element;
+    int x;
+    int y;
+    int height;
+    int weight;
+    bool shift_flag = false;
+};
+
 struct ElementConfig {
     QString type;
     QString displayName;

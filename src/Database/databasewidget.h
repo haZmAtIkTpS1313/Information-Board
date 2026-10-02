@@ -7,6 +7,7 @@
 #include <QSplitter>
 #include <QLineEdit>
 #include <QPushButton>
+#include <qpushbutton.h>
 #include "databaseemanager.h"
 
 class DatabaseWidget : public QWidget
@@ -29,6 +30,7 @@ private slots:
     void onShowOnBoard();
     void onRefreshTable();
     void onCellChanged(int row, int column);
+    void onImportFromExcel();
 
 private:
     void setupUI();
@@ -48,6 +50,7 @@ private:
     QPushButton *deleteRowBtn;
     QPushButton *showOnBoardBtn;
     QPushButton *refreshBtn;
+    QPushButton *importExcelBtn;
 
     QString currentTable;
     QStringList currentColumns;

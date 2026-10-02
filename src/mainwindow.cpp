@@ -131,6 +131,17 @@ MainWindow::MainWindow(QWidget *parent)
             });
 
     applyWeatherSettings();
+
+
+    QPushButton *restoreBoardBtn = new QPushButton("↩ Вернуть доску", this);
+    restoreBoardBtn->setMinimumHeight(32);
+    restoreBoardBtn->setStyleSheet(
+        "QPushButton { background-color: #2d7d46; color: white; padding: 8px; }"
+        "QPushButton:hover { background-color: #35a05a; }"
+    );
+
+
+    connect(restoreBoardBtn, &QPushButton::clicked, this, &MainWindow::handleRestoreBoardButtonClicked);
 }
 
 MainWindow::~MainWindow()
@@ -166,6 +177,9 @@ void MainWindow::setupConnections()
         connect(ui->showTextButton, &QPushButton::clicked, this, &MainWindow::handleShowTextButtonClicked);
     if (ui->clearBoardButton)
         connect(ui->clearBoardButton, &QPushButton::clicked, this, &MainWindow::handleClearBoardButtonClicked);
+    if (ui->resetBoardButton) {
+        connect(ui->resetBoardButton, &QPushButton::clicked, this, &MainWindow::handleRestoreBoardButtonClicked);
+    }
 
     // --- Размер / шрифт / стиль текста ---
     if (ui->applyTextSizeButton)
@@ -819,6 +833,16 @@ void MainWindow::onSlideshowImageChanged(const QString &imagePath)
     boardWindow->setSlideshowImage(imagePath);
 }
 
+void MainWindow::handleRestoreBoardButtonClicked()
+{
+    if (boardWindow && boardWindow->isTakeoverActive()) {
+        boardWindow->exitTakeoverMode();
+        statusBar()->showMessage("Обычный вид доски восстановлен", 3000);
+    } else {
+        statusBar() -> showMessage("Доска уже находится в обычном режиме", 3000);
+    }   
+}
+
 void MainWindow::applySlideshowSettings()
 {
     if (!slideshowManager) return;
@@ -860,7 +884,7 @@ void MainWindow::handleEmergencyButtonClicked()
 void MainWindow::onEmergencyModeChanged(bool active)
 {
     if (ui->emergencyButton) {
-        ui->emergencyButton->setText(active ? "✅ Выключить экстренный режим" : "🚨 Включить экстренный режим");
+        ui->emergencyButton->setText(active ? "✅ Выключить экстренный режим" : "⚠️ Включить экстренный режим");
     }
     statusBar()->showMessage(active ? "Экстренный режим включён" : "Экстренный режим выключен",
                               active ? 5000 : 3000);

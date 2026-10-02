@@ -1,5 +1,6 @@
 #include "boarddesignerwidget.h"
 #include "elementpropertiesdialog.h"
+#include "src/Board/draggableelement.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -399,4 +400,3 @@ void BoardDesignerWidget::onElementPropertiesRequested(DraggableElement *element
         emit layoutChanged();
     }
 }
-

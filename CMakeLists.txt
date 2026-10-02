@@ -1,16 +1,14 @@
-                                                                                                                                                                                                                                                                                                            cmake_minimum_required(VERSION 3.16)
-
+cmake_minimum_required(VERSION 3.16)
 project(InformationBoard VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOMOC ON)                   # было: CMAKE_AUTOMOCON
 set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)     # было: REQUIREDON (без пробела)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)       # было: DIRON (без пробела)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # было: COMMANDSON (без пробела)
 
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network Sql Multimedia)
 

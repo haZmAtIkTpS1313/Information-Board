@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>890</width>
+    <width>1100</width>
     <height>757</height>
    </rect>
   </property>
@@ -217,7 +217,16 @@ QPushButton[text^=&quot;⚙️&quot;]:hover {
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="centralLayout">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>8</number>
+    </property>
+    <property name="topMargin">
+     <number>8</number>
+    </property>
+    <property name="rightMargin">
+     <number>8</number>
+    </property>
+    <property name="bottomMargin">
      <number>8</number>
     </property>
     <item>
@@ -264,9 +273,6 @@ QPushButton[text^=&quot;⚙️&quot;]:hover {
             <layout class="QHBoxLayout" name="textButtonsLayout">
              <item>
               <widget class="QPushButton" name="showTextButton">
-               <property name="minimumHeight">
-                <number>40</number>
-               </property>
                <property name="text">
                 <string>Показать текст на доске</string>
                </property>
@@ -274,9 +280,6 @@ QPushButton[text^=&quot;⚙️&quot;]:hover {
              </item>
              <item>
               <widget class="QPushButton" name="clearBoardButton">
-               <property name="minimumHeight">
-                <number>40</number>
-               </property>
                <property name="text">
                 <string>Очистить доску</string>
                </property>
@@ -293,23 +296,31 @@ QPushButton[text^=&quot;⚙️&quot;]:hover {
            <string>Управление окнами</string>
           </property>
           <layout class="QGridLayout" name="windowGroupLayout">
-           <item row="0" column="0">
-            <widget class="QPushButton" name="showBoardButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="fullscreenButton">
              <property name="text">
-              <string>Показать окно доски</string>
+              <string>Полный экран</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QPushButton" name="fullscreenButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="quickTimeButton">
              <property name="text">
-              <string>Полный экран</string>
+              <string>🕐 Время</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="quickLogoButton">
+             <property name="text">
+              <string>🏢 Логотип</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="quickWeatherButton">
+             <property name="text">
+              <string>☀️ Погода</string>
              </property>
             </widget>
            </item>
@@ -320,41 +331,15 @@ QPushButton[text^=&quot;⚙️&quot;]:hover {
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QPushButton" name="quickWeatherButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="showBoardButton">
              <property name="text">
-              <string>☀️ Погода</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QPushButton" name="quickTimeButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
-             <property name="text">
-              <string>🕐 Время</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="quickLogoButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
-             <property name="text">
-              <string>🏢 Логотип</string>
+              <string>Показать окно доски</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
             <widget class="QPushButton" name="settingsButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>⚙️ Настройки</string>
              </property>
@@ -371,9 +356,6 @@ QPushButton[text^=&quot;⚙️&quot;]:hover {
           <layout class="QVBoxLayout" name="emergencyGroupLayout">
            <item>
             <widget class="QPushButton" name="emergencyButton">
-             <property name="minimumHeight">
-              <number>52</number>
-             </property>
              <property name="styleSheet">
               <string notr="true">QPushButton { background-color: #c0392b; color: white; font-weight: bold; font-size: 14px; border: 1px solid #922b21; }
 QPushButton:hover { background-color: #a93226; }
@@ -415,9 +397,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
           <layout class="QHBoxLayout" name="colorGroupLayout">
            <item>
             <widget class="QPushButton" name="setCustomColorButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Выбрать цвет</string>
              </property>
@@ -425,9 +404,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item>
             <widget class="QPushButton" name="setRedBackgroundButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Красный фон</string>
              </property>
@@ -435,9 +411,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item>
             <widget class="QPushButton" name="setBlueBackgroundButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Синий фон</string>
              </property>
@@ -445,9 +418,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item>
             <widget class="QPushButton" name="setGreenBackgroundButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Зеленый фон</string>
              </property>
@@ -455,9 +425,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item>
             <widget class="QPushButton" name="setBlackBackgroundButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Черный фон</string>
              </property>
@@ -515,9 +482,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="1" column="2">
             <widget class="QPushButton" name="applyTextSizeButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Применить размеры</string>
              </property>
@@ -541,9 +505,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="0" column="1">
             <widget class="QPushButton" name="applyFontButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Применить шрифт</string>
              </property>
@@ -579,9 +540,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="2" column="0">
             <widget class="QPushButton" name="applyFontStyleButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Применить стиль</string>
              </property>
@@ -623,9 +581,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
           <layout class="QHBoxLayout" name="groupBox2Layout">
            <item>
             <widget class="QPushButton" name="applyDesignButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Применить дизайн</string>
              </property>
@@ -633,9 +588,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item>
             <widget class="QPushButton" name="resetDesignButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Сбросить макет</string>
              </property>
@@ -643,9 +595,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item>
             <widget class="QPushButton" name="saveDesignButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Сохранить</string>
              </property>
@@ -653,9 +602,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item>
             <widget class="QPushButton" name="loadDesignButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Загрузить</string>
              </property>
@@ -672,9 +618,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
           <layout class="QGridLayout" name="groupBox3Layout">
            <item row="0" column="0">
             <widget class="QPushButton" name="toggleLogoButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Скрыть логотип</string>
              </property>
@@ -682,9 +625,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="0" column="1">
             <widget class="QPushButton" name="toggleTimeButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Скрыть время</string>
              </property>
@@ -692,9 +632,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="0" column="2">
             <widget class="QPushButton" name="toggleWeatherButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Скрыть погоду</string>
              </property>
@@ -702,9 +639,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="0" column="3">
             <widget class="QPushButton" name="toggleTickerButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Скрыть бегущую строку</string>
              </property>
@@ -712,9 +646,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="setLogoImageButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Выбрать логотип</string>
              </property>
@@ -722,9 +653,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="1" column="1">
             <widget class="QPushButton" name="saveConfigButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Сохранить конфигурацию</string>
              </property>
@@ -732,9 +660,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="1" column="2">
             <widget class="QPushButton" name="loadConfigButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Загрузить конфигурацию</string>
              </property>
@@ -742,9 +667,6 @@ QPushButton:pressed { background-color: #922b21; }</string>
            </item>
            <item row="1" column="3">
             <widget class="QPushButton" name="resetBoardButton">
-             <property name="minimumHeight">
-              <number>40</number>
-             </property>
              <property name="text">
               <string>Сбросить конфигурацию</string>
              </property>

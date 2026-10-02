@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QColor>
+#include "draggableelement.h"
 
 class QLineEdit;
 class QSpinBox;
@@ -27,6 +28,8 @@ public:
     // Разбирает/собирает style в виде готовой строки QSS ("QLabel { ... }")
     void setStyle(const QString &style);
     QString buildStyle() const;
+
+    void markofElement(DraggableElement *element, int width, int height);
 
 private slots:
     void onPickBackgroundColor();

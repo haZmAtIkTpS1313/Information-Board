@@ -53,7 +53,7 @@ void SlideshowManager::rescan()
     QDir dir(m_folderPath);
     if (!dir.exists()) return;
 
-    QStringList filters = {"*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif"};
+    QStringList filters = {"*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", ".webp", ".tif", ".tiff",".heic", ".heif", ".avif"};
     for (const QString &fileName : dir.entryList(filters, QDir::Files, QDir::Name)) {
         m_images << dir.filePath(fileName);
     }

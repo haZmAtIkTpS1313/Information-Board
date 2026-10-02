@@ -1,4 +1,5 @@
 #include "elementpropertiesdialog.h"
+#include "src/Board/draggableelement.h"
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -216,3 +217,7 @@ QString ElementPropertiesDialog::buildStyle() const
         .arg(fontWeight)
         .arg(fontStyle);
 }
+// void ElementPropertiesDialog::arkofElement(DraggableElement * element, int wedthheight, int height){
+//     int new_wedth;
+//     int new_height;
+// }
