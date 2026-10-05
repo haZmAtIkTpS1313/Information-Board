@@ -9,6 +9,7 @@
 #include <QPixmap>
 #include <QMediaPlayer>
 #include <QFontMetrics>
+#include <QFileInfo>
 
 BoardWindow::BoardWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -253,14 +254,33 @@ void BoardWindow::setLogo(const QString &imagePath, int x, int y, int width, int
 
 void BoardWindow::setSlideshowImage(const QString &imagePath)
 {
-    if (!elements.contains("slideshow")) return;   // элемент не добавлен в текущий макет
+    qDebug() << "=== BoardWindow::setSlideshowImage ===";
+    qDebug() << "Путь:" << imagePath;
+    qDebug() << "Все элементы в elements:" << elements.keys();
+    
+    if (!elements.contains("slideshow")) {
+        qDebug() << "!!! ЭЛЕМЕНТ 'slideshow' НЕ НАЙДЕН !!!";
+        return;
+    }
 
     QLabel *label = elements["slideshow"];
+    qDebug() << "QLabel получен";
+    qDebug() << "Размер label:" << label->size();
+    qDebug() << "Label виден:" << label->isVisible();
+    qDebug() << "Label parent:" << (label->parentWidget() ? label->parentWidget()->objectName() : "nullptr");
+    
     QPixmap pixmap(imagePath);
     if (!pixmap.isNull()) {
-        label->setPixmap(pixmap.scaled(label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        qDebug() << "QPixmap загружен, размер:" << pixmap.size();
+        
+        QPixmap scaled = pixmap.scaled(label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        label->setPixmap(scaled);
         label->setText("");
+        
+        qDebug() << "=== Изображение установлено ===";
     } else {
+        qDebug() << "!!! QPixmap не загрузился !!!";
+        qDebug() << "Файл существует:" << QFileInfo(imagePath).exists();
         label->setText("❌ Изображение не найдено");
     }
 }
@@ -691,3 +711,16 @@ void BoardWindow::resizeEvent(QResizeEvent *event)
 // closeEvent(QCloseEvent*) был объявлен выше, но лишь звал реализацию
 // QMainWindow по умолчанию (accept() без изменений) — убран.
 
+void BoardWindow::setAnnouncementText(const QString &text)
+{
+    if (!elements.contains("announcement")) return;
+    QLabel *label = elements["announcement"];
+    label->setText(text);
+}
+
+void BoardWindow::hideAnnouncement()
+{
+    if (!elements.contains("announcement")) return;
+    QLabel *label = elements["announcement"];
+    label->setText("");
+}

@@ -14,6 +14,12 @@
 #include <QStringList>
 #include <QTableWidgetItem>
 #include <QMessageBox>
+#include <qdatetime.h>
+#include <qfileinfo.h>
+#include <qfont.h>
+#include <qnamespace.h>
+#include <qtablewidget.h>
+#include <algorithm>
 
 static const char *kDayShort[7] = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
 
@@ -102,19 +108,53 @@ int ScheduleWidget::selectedRow() const
 void ScheduleWidget::refreshTable()
 {
     m_table->setRowCount(0);
-    const QList<ScheduleEntry> &entries = m_manager->entries();
-    m_table->setRowCount(entries.size());
 
-    for (int row = 0; row < entries.size(); ++row) {
+    QList<ScheduleEntry> entries = m_manager->entries();
+
+    std::sort(entries.begin(), entries.end(), [this](const ScheduleEntry &a, const ScheduleEntry &b) {
+        QDateTime nextA = m_manager->nextOccurrence(a);
+        QDateTime nextB = m_manager->nextOccurrence(b);
+
+        bool aValid = nextA.isValid();
+        bool bValid = nextB.isValid();
+        if(!aValid && !bValid) return a.time < b.time;
+        if (!aValid) return false;
+        if (!bValid) return true;
+
+        return nextA < nextB;
+    });
+
+    m_table->setRowCount(entries.size());\
+    
+    for (int row = 0; row < entries.size(); ++row)
+    {
         const ScheduleEntry &entry = entries[row];
-        m_table->setItem(row, 0, new QTableWidgetItem(entry.name));
-        m_table->setItem(row, 1, new QTableWidgetItem(entry.time.toString("HH:mm")));
-        m_table->setItem(row, 2, new QTableWidgetItem(formatDays(entry.days)));
-        m_table->setItem(row, 3, new QTableWidgetItem(entry.soundPath.isEmpty() ? "—" : QFileInfo(entry.soundPath).fileName()));
-        m_table->setItem(row, 4, new QTableWidgetItem(entry.designPath.isEmpty() ? "—" : QFileInfo(entry.designPath).fileName()));
-        m_table->setItem(row, 5, new QTableWidgetItem(entry.message));
-        m_table->setItem(row, 6, new QTableWidgetItem(entry.enabled ? "Да" : "Нет"));
-    }
+
+        QTableWidgetItem *nameItem = new QTableWidgetItem(entry.name);
+        QTableWidgetItem *timeItem = new QTableWidgetItem(entry.time.toString("HH:mm"));
+        QTableWidgetItem *daysItem = new QTableWidgetItem(formatDays(entry.days));
+        QTableWidgetItem *soundItem = new QTableWidgetItem(entry.soundPath.isEmpty() ? "-" : QFileInfo(entry.soundPath).fileName());
+        QTableWidgetItem *designItem = new QTableWidgetItem((entry.designPath.isEmpty() ? "—" : QFileInfo(entry.designPath).fileName()));
+        QTableWidgetItem *messageItem = new QTableWidgetItem(entry.message);
+        QTableWidgetItem *enabledItem = new QTableWidgetItem(entry.enabled ? "Да" : "Нет");
+
+        QString entryId = entry.id;
+        nameItem->setData(Qt::UserRole, entryId);
+        timeItem->setData(Qt::UserRole, entryId);
+        daysItem->setData(Qt::UserRole, entryId);
+        soundItem->setData(Qt::UserRole, entryId);
+        designItem->setData(Qt::UserRole, entryId);
+        messageItem->setData(Qt::UserRole, entryId);
+        enabledItem->setData(Qt::UserRole, entryId);
+
+        m_table->setItem(row,0,nameItem);
+        m_table->setItem(row,1,timeItem);
+        m_table->setItem(row,2,daysItem);
+        m_table->setItem(row,3,soundItem);
+        m_table->setItem(row,4,designItem);
+        m_table->setItem(row,5,messageItem);
+        m_table->setItem(row,6,enabledItem);
+       }
 }
 
 void ScheduleWidget::onAddEntry()
@@ -127,7 +167,7 @@ void ScheduleWidget::onAddEntry()
 
 void ScheduleWidget::onEditEntry()
 {
-    int row = selectedRow();
+    int row = findRowIndex();
     if (row < 0) {
         QMessageBox::information(this, "Изменить", "Выберите событие в таблице.");
         return;
@@ -141,7 +181,7 @@ void ScheduleWidget::onEditEntry()
 
 void ScheduleWidget::onRemoveEntry()
 {
-    int row = selectedRow();
+    int row = findRowIndex();
     if (row < 0) {
         QMessageBox::information(this, "Удалить", "Выберите событие в таблице.");
         return;
@@ -151,14 +191,13 @@ void ScheduleWidget::onRemoveEntry()
 
 void ScheduleWidget::onTestEntry()
 {
-    int row = selectedRow();
+    int row = findRowIndex();
     if (row < 0) {
         QMessageBox::information(this, "Проверить", "Выберите событие в таблице.");
         return;
     }
     m_manager->testEntry(row);
 }
-
 void ScheduleWidget::onGlobalEnabledToggled(bool checked)
 {
     m_manager->setGlobalEnabled(checked);
@@ -167,4 +206,18 @@ void ScheduleWidget::onGlobalEnabledToggled(bool checked)
 void ScheduleWidget::onQuietHoursChanged()
 {
     m_manager->setQuietHours(m_quietHoursCheck->isChecked(), m_quietStartEdit->time(), m_quietEndEdit->time());
+}
+int ScheduleWidget::findRowIndex() const
+{
+    QList<QTableWidgetItem*> selected = m_table->selectedItems();
+    if (selected.isEmpty()) return -1;
+
+    QString selectedId = selected.first()->data(Qt::UserRole).toString();
+    if (selectedId.isEmpty()) return -1;
+
+    const QList<ScheduleEntry> &entries = m_manager->entries();
+    for (int i = 0; i < entries.size(); ++i) {
+        if (entries[i].id == selectedId) return i;
+    }
+    return -1;
 }

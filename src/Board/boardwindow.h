@@ -61,6 +61,8 @@ public:
     void setEmergencyMode(bool active, const QString &message = QString(), const QString &soundPath = QString());
     bool isEmergencyActive() const { return emergencyActive; }
 
+    void setAnnouncementText(const QString &text);
+    void hideAnnouncement();
 signals:
     // Испускается всегда, когда состояние реально меняется — в том числе если
     // тревогу выключил не пользователь кнопкой, а сама доска (applyLayout/

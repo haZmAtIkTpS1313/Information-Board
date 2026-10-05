@@ -1,5 +1,6 @@
 #include "slideshowmanager.h"
 #include <QDir>
+#include <QDebug>
 
 SlideshowManager::SlideshowManager(QObject *parent)
     : QObject(parent)
@@ -48,12 +49,17 @@ void SlideshowManager::setEnabled(bool enabled)
 void SlideshowManager::rescan()
 {
     m_images.clear();
-    if (m_folderPath.isEmpty()) return;
-
     QDir dir(m_folderPath);
     if (!dir.exists()) return;
 
-    QStringList filters = {"*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", ".webp", ".tif", ".tiff",".heic", ".heif", ".avif"};
+    QStringList filters = {"*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.webp", "*.tif", "*.tiff","*.heic", "*.heif", "*.avif"};
+    QStringList files = dir.entryList(filters, QDir::Files, QDir::Name);
+
+    qDebug() << "Найдено файлов: " << files.size() << "в папке" << m_folderPath;
+    for (const QString &f : files) {
+        qDebug() << " -" << f;
+    }
+
     for (const QString &fileName : dir.entryList(filters, QDir::Files, QDir::Name)) {
         m_images << dir.filePath(fileName);
     }
@@ -71,7 +77,19 @@ void SlideshowManager::start()
 
 void SlideshowManager::onTick()
 {
-    if (m_images.isEmpty()) return;
+    qDebug() << "=== SlideshowManager::onTick ===";
+    qDebug() << "m_enabled:" << m_enabled;
+    qDebug() << "Количество изображений:" << m_images.size();
+    
+    if (m_images.isEmpty()) {
+        qDebug() << "!!! Список пуст, выходим !!!";
+        return;
+    }
+    
     m_currentIndex = (m_currentIndex + 1) % m_images.size();
-    emit imageChanged(m_images[m_currentIndex]);
+    QString imagePath = m_images[m_currentIndex];
+    
+    qDebug() << "Эмитим imageChanged с путём:" << imagePath;
+    emit imageChanged(imagePath);
+    qDebug() << "=== Сигнал эмитирован ===";
 }

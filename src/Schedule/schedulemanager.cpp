@@ -137,6 +137,28 @@ bool ScheduleManager::nextEvent(ScheduleEntry &outEntry, QDateTime &outWhen) con
     outWhen = best;
     return true;
 }
+QDateTime ScheduleManager::nextOccurrence(const ScheduleEntry &entry) const
+{
+    if (!entry.enabled) return QDateTime();
+
+    QDateTime now = QDateTime::currentDateTime();
+    QDateTime best;
+
+    for (int offset = 0; offset < 8; ++offset) {
+        QDate date = now.date().addDays(offset);
+        int dow = date.dayOfWeek();
+        if (!entry.days.contains(dow)) continue;
+
+        QDateTime candidate(date, entry.time);
+        if (candidate <= now) continue;
+
+        if (!best.isValid() || candidate < best) {
+            best = candidate;
+        }
+    }
+
+    return best;
+}
 
 void ScheduleManager::onMinuteTimer()
 {

@@ -79,7 +79,8 @@ private slots:
 
     void handleSettingsButtonClicked();
 
-    void onAnnouncementShow(const QString &text);
+    void onAnnouncementShow(const QString &text, int durationSeconds);
+    void onAnnouncementHide();
 
     void handleEmergencyButtonClicked();
     void onEmergencyModeChanged(bool active);

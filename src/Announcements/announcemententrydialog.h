@@ -7,6 +7,8 @@
 class QPlainTextEdit;
 class QSpinBox;
 class QCheckBox;
+class QTimeEdit;
+class QGroupBox;
 
 class AnnouncementEntryDialog : public QDialog
 {
@@ -20,10 +22,18 @@ public:
 
 private:
     void setupUI();
+    void updateScheduleVisibility();  
 
     QPlainTextEdit *textEdit;
     QSpinBox *prioritySpin;
+    QSpinBox *durationSpin;            
     QCheckBox *enabledCheck;
+    
+    
+    QTimeEdit *timeStartEdit;
+    QTimeEdit *timeEndEdit;
+    QCheckBox *dayChecks[7];           
+    QGroupBox *scheduleGroup;
 
     QString m_id;
 };

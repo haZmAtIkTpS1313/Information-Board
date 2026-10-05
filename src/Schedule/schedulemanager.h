@@ -52,6 +52,7 @@ public:
 
     // Ближайшее по времени включённое событие (просматривает неделю вперёд)
     bool nextEvent(ScheduleEntry &outEntry, QDateTime &outWhen) const;
+    QDateTime nextOccurrence(const ScheduleEntry &entry) const;
 
     void save();
     void load();

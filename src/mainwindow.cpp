@@ -134,14 +134,28 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     QPushButton *restoreBoardBtn = new QPushButton("↩ Вернуть доску", this);
-    restoreBoardBtn->setMinimumHeight(32);
+    restoreBoardBtn->setMinimumHeight(40);
     restoreBoardBtn->setStyleSheet(
-        "QPushButton { background-color: #2d7d46; color: white; padding: 8px; }"
-        "QPushButton:hover { background-color: #35a05a; }"
+        "QPushButton {"
+        "   background-color: #2d7d46;"
+        "   color: white;"
+        "   padding: 8px;"
+        "   font-size: 14px;"
+        "   font-weight: bold;"
+        "   border-radius: 5px;"
+        "}"
+        "QPushButton:hover {"
+        "   background-color: #35a05a;"
+        "}"
     );
 
+    // Добавляем в группу "Управление окнами", рядом с кнопкой настроек
+    if (ui->windowGroupLayout) {
+        ui->windowGroupLayout->addWidget(restoreBoardBtn, 2, 1);
+    }
 
-    connect(restoreBoardBtn, &QPushButton::clicked, this, &MainWindow::handleRestoreBoardButtonClicked);
+    connect(restoreBoardBtn, &QPushButton::clicked,
+            this, &MainWindow::handleRestoreBoardButtonClicked);
 }
 
 MainWindow::~MainWindow()
@@ -795,10 +809,19 @@ void MainWindow::updateCountdown()
     }
 }
 
-void MainWindow::onAnnouncementShow(const QString &text)
+void MainWindow::onAnnouncementShow(const QString &text, int durationSeconds)
 {
-    if (!boardWindow) return;
-    boardWindow->setElementText("announcement", text);
+   if (boardWindow) {
+        boardWindow->setAnnouncementText(text);
+    }
+    Q_UNUSED(durationSeconds); 
+}
+
+void MainWindow::onAnnouncementHide()
+{
+    if (boardWindow) {
+        boardWindow->hideAnnouncement();   
+    }
 }
 
 void MainWindow::applyWeatherSettings()
@@ -829,8 +852,17 @@ void MainWindow::handleSettingsButtonClicked()
 
 void MainWindow::onSlideshowImageChanged(const QString &imagePath)
 {
-    if (!boardWindow) return;
+    qDebug() << "=== MainWindow::onSlideshowImageChanged ===";
+    qDebug() << "Путь:" << imagePath;
+    qDebug() << "boardWindow:" << (boardWindow ? "существует" : "nullptr");
+    
+    if (!boardWindow) {
+        qDebug() << "!!! boardWindow == nullptr !!!";
+        return;
+    }
+    
     boardWindow->setSlideshowImage(imagePath);
+    qDebug() << "=== Передали в boardWindow ===";
 }
 
 void MainWindow::handleRestoreBoardButtonClicked()

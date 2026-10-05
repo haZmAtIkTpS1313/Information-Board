@@ -6,16 +6,21 @@
 #include <QJsonArray>
 #include <QUuid>
 #include <QRandomGenerator>
+#include <QDateTime>
+#include <QJsonArray>
 #include <algorithm>
 
 AnnouncementManager::AnnouncementManager(QObject *parent)
     : QObject(parent)
     , m_rotationPos(0)
     , m_timer(new QTimer(this))
+    , m_hideTimer(new QTimer(this))
     , m_globalEnabled(true)
     , m_intervalSeconds(8)
 {
     connect(m_timer, &QTimer::timeout, this, &AnnouncementManager::onTick);
+    m_hideTimer->setSingleShot(true);
+    connect(m_hideTimer, &QTimer::timeout, this, &AnnouncementManager::onHideTimer);
 }
 
 void AnnouncementManager::start()
@@ -68,11 +73,33 @@ void AnnouncementManager::setIntervalSeconds(int seconds)
     save();
 }
 
+
+bool AnnouncementManager::isAnnouncementActiveNow(const Announcement &a) const
+{
+    if (!a.enabled) return false;
+    if (!a.hasSchedule) return true;   
+
+    int today = QDate::currentDate().dayOfWeek();   
+    if (!a.days.isEmpty() && !a.days.contains(today)) {
+        return false;
+    }
+
+    QTime now = QTime::currentTime();
+    
+    if (a.timeStart <= a.timeEnd) {
+        return now >= a.timeStart && now < a.timeEnd;
+    } else {
+        return now >= a.timeStart || now < a.timeEnd;
+    }
+}
+
 void AnnouncementManager::rebuildRotation()
 {
     m_rotation.clear();
     for (int i = 0; i < m_announcements.size(); ++i) {
         if (!m_announcements[i].enabled) continue;
+        if (!isAnnouncementActiveNow(m_announcements[i])) continue;
+        
         int weight = qBound(1, m_announcements[i].priority, 5);
         for (int w = 0; w < weight; ++w) m_rotation.append(i);
     }
@@ -82,15 +109,42 @@ void AnnouncementManager::rebuildRotation()
 
 void AnnouncementManager::onTick()
 {
-    if (!m_globalEnabled || m_rotation.isEmpty()) return;
+    if (!m_globalEnabled) return;
 
     if (m_rotationPos >= m_rotation.size()) {
         rebuildRotation();
-        if (m_rotation.isEmpty()) return;
     }
 
-    int idx = m_rotation[m_rotationPos++];
-    emit showAnnouncement(m_announcements[idx].text);
+    if (m_rotation.isEmpty()) {
+        emit hideAnnouncement();
+        return;
+    }
+
+    int attempts = 0;
+    while (attempts < m_rotation.size()) {
+        int idx = m_rotation[m_rotationPos];
+        m_rotationPos = (m_rotationPos + 1) % m_rotation.size();
+        
+        if (isAnnouncementActiveNow(m_announcements[idx])) {
+            int duration = m_announcements[idx].displayDuration;
+            emit showAnnouncement(m_announcements[idx].text, duration);
+            
+            if (duration > 0) {
+                m_hideTimer->start(duration * 1000);
+            } else {
+                m_hideTimer->stop();  
+            }
+            return;
+        }
+        attempts++;
+    }
+    
+    emit hideAnnouncement();
+}
+
+void AnnouncementManager::onHideTimer()
+{
+    emit hideAnnouncement();
 }
 
 QString AnnouncementManager::configPath() const
@@ -113,6 +167,16 @@ void AnnouncementManager::save()
         obj["text"] = a.text;
         obj["priority"] = a.priority;
         obj["enabled"] = a.enabled;
+        
+        obj["displayDuration"] = a.displayDuration;
+        obj["hasSchedule"] = a.hasSchedule;
+        obj["timeStart"] = a.timeStart.toString("HH:mm");
+        obj["timeEnd"] = a.timeEnd.toString("HH:mm");
+        
+        QJsonArray daysArray;
+        for (int day : a.days) daysArray.append(day);
+        obj["days"] = daysArray;
+        
         array.append(obj);
     }
     root["announcements"] = array;
@@ -145,6 +209,17 @@ void AnnouncementManager::load()
         a.text = obj.value("text").toString();
         a.priority = obj.value("priority").toInt(3);
         a.enabled = obj.value("enabled").toBool(true);
+        
+        // === НОВЫЕ ПОЛЯ ===
+        a.displayDuration = obj.value("displayDuration").toInt(10);
+        a.hasSchedule = obj.value("hasSchedule").toBool(false);
+        a.timeStart = QTime::fromString(obj.value("timeStart").toString("00:00"), "HH:mm");
+        a.timeEnd = QTime::fromString(obj.value("timeEnd").toString("23:59"), "HH:mm");
+        
+        for (const auto &dayValue : obj.value("days").toArray()) {
+            a.days.insert(dayValue.toInt());
+        }
+        
         if (a.id.isEmpty()) a.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
         m_announcements.append(a);
     }

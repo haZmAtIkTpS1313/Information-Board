@@ -35,6 +35,7 @@ private:
     QCheckBox *m_quietHoursCheck;
     QTimeEdit *m_quietStartEdit;
     QTimeEdit *m_quietEndEdit;
+    int findRowIndex() const;
 };
 
 #endif // SCHEDULEWIDGET_H

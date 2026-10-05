@@ -72,17 +72,37 @@ int AnnouncementWidget::selectedRow() const
 void AnnouncementWidget::refreshTable()
 {
     m_table->setRowCount(0);
+    m_table->setColumnCount(5);  
+    m_table->setHorizontalHeaderLabels({
+        "Текст", "Приоритет", "Время показа", "Расписание", "Активно"
+    });
+    m_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    
     const QList<Announcement> &items = m_manager->announcements();
     m_table->setRowCount(items.size());
 
     for (int row = 0; row < items.size(); ++row) {
         const Announcement &a = items[row];
+        
         m_table->setItem(row, 0, new QTableWidgetItem(a.text));
         m_table->setItem(row, 1, new QTableWidgetItem(QString::number(a.priority)));
-        m_table->setItem(row, 2, new QTableWidgetItem(a.enabled ? "Да" : "Нет"));
+        
+        QString durationText = a.displayDuration > 0 
+            ? QString::number(a.displayDuration) + " сек" 
+            : "до следующего";
+        m_table->setItem(row, 2, new QTableWidgetItem(durationText));
+       
+        QString scheduleText;
+        if (!a.hasSchedule) {
+            scheduleText = "—";
+        } else {
+            scheduleText = a.timeStart.toString("HH:mm") + " – " + a.timeEnd.toString("HH:mm");
+        }
+        m_table->setItem(row, 3, new QTableWidgetItem(scheduleText));
+        
+        m_table->setItem(row, 4, new QTableWidgetItem(a.enabled ? "Да" : "Нет"));
     }
 }
-
 void AnnouncementWidget::onAddAnnouncement()
 {
     AnnouncementEntryDialog dialog(this);

@@ -7,6 +7,8 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QDebug>
+#include <qglobal.h>
+#include <qpaintdevice.h>
 
 BoardDesignerWidget::BoardDesignerWidget(QWidget *parent)
     : QWidget(parent)
@@ -44,53 +46,78 @@ void BoardDesignerWidget::setupUI()
         "   background-color: #ecf0f1;"
         "   border-radius: 5px;"
         "}"
-        );
+    );
     titleLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(titleLabel);
 
     QHBoxLayout *contentLayout = new QHBoxLayout();
     contentLayout->setSpacing(15);
 
-    // Панель инструментов (слева)
-    paletteWidget = new QWidget(this);
-    paletteWidget->setFixedWidth(150);
+    // === ПАНЕЛЬ ЭЛЕМЕНТОВ (слева, с прокруткой) ===
+    paletteWidget = new QWidget();
     paletteWidget->setStyleSheet(
         "QWidget {"
         "   background-color: #f8f9fa;"
-        "   border: 2px solid #bdc3c7;"
-        "   border-radius: 5px;"
         "}"
-        );
-
-    paletteLayout = new QGridLayout(paletteWidget);
-    paletteLayout->setSpacing(10);
+    );
+    paletteLayout = new QVBoxLayout(paletteWidget);
+    paletteLayout->setSpacing(8);
     paletteLayout->setContentsMargins(10, 10, 10, 10);
     paletteLayout->setAlignment(Qt::AlignTop);
 
+    // Заголовок палитры
     QLabel *paletteTitle = new QLabel("Доступные элементы", paletteWidget);
     paletteTitle->setStyleSheet(
         "QLabel {"
         "   font-weight: bold;"
         "   color: #2c3e50;"
-        "   padding: 5px;"
+        "   padding: 8px;"
         "   background-color: #bdc3c7;"
-        "   border-radius: 3px;"
+        "   border-radius: 4px;"
         "}"
-        );
+    );
     paletteTitle->setAlignment(Qt::AlignCenter);
-    paletteLayout->addWidget(paletteTitle, 0, 0, 1, 2);
+    paletteLayout->addWidget(paletteTitle);
 
-    contentLayout->addWidget(paletteWidget);
+    // Скролл-область для палитры
+    paletteScrollArea = new QScrollArea(this);
+    paletteScrollArea->setWidget(paletteWidget);
+    paletteScrollArea->setWidgetResizable(true);
+    paletteScrollArea->setFixedWidth(180);
+    paletteScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    paletteScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    paletteScrollArea->setStyleSheet(
+        "QScrollArea {"
+        "   background-color: #f8f9fa;"
+        "   border: 2px solid #bdc3c7;"
+        "   border-radius: 5px;"
+        "}"
+        "QScrollBar:vertical {"
+        "   background: #ecf0f1;"
+        "   width: 12px;"
+        "   border-radius: 6px;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "   background: #95a5a6;"
+        "   border-radius: 6px;"
+        "   min-height: 30px;"
+        "}"
+        "QScrollBar::handle:vertical:hover {"
+        "   background: #7f8c8d;"
+        "}"
+    );
 
-    // Область дизайнера (справа)
-    designerArea = new QWidget(this);
+    contentLayout->addWidget(paletteScrollArea);
+
+    // === ОБЛАСТЬ ДИЗАЙНЕРА (справа) ===
+    designerArea = new DesignerArea(this);
     designerArea->setStyleSheet(
         "QWidget {"
         "   background-color: #2c3e50;"
         "   border: 3px solid #34495e;"
         "   border-radius: 5px;"
         "}"
-        );
+    );
     designerArea->setAcceptDrops(true);
     designerArea->setMouseTracking(true);
 
@@ -118,28 +145,20 @@ void BoardDesignerWidget::createElementPalette()
         {"slideshow", "Слайдшоу", "🖼️ Слайдшоу", 440, 120},
         {"content", "Контент", "Текст", 200, 100},
         {"weather", "Погода", "☀️ +22°C", 120, 80},
-        // Заготовки под данные, которые пока не получают реальных значений ни от одного API:
-        // {"uvIndex", "УФ-индекс", "УФ: 3", 100, 70},
-        // {"airQuality", "Качество воздуха", "AQI: 50", 120, 80},
         {"wind", "Ветер", "3 м/с С", 120, 80},
-        // {"precipitation", "Осадки", "0 мм", 100, 70},
         {"humidity", "Влажность", "45%", 100, 70},
         {"pressure", "Давление", "1013 гПа", 100, 70},
-        // {"sunrise", "Восход", "06:30", 100, 70},
-        // {"sunset", "Закат", "20:30", 100, 70},
         {"countdown", "Обратный отсчёт", "До события: --:--:--", 240, 70},
         {"announcement", "Объявление", "Объявлений пока нет", 480, 70},
         {"ticker", "Бегущая строка", "Новости...", 400, 60}
     };
 
-    int row = 1;
-    int col = 0;
-
     for (const auto &elem : elementsList) {
         DraggableElement *element = new DraggableElement(
             elem.type, elem.name, elem.defaultText, paletteWidget
-            );
-        element->setFixedSize(130, 50);
+        );
+        element->setFixedHeight(45);       // высота одной строки
+        element->setMinimumWidth(150);     // ширина под панель
         element->setText(elem.name);
         element->setStyleSheet(
             "DraggableElement {"
@@ -147,24 +166,23 @@ void BoardDesignerWidget::createElementPalette()
             "   color: white;"
             "   border: 2px solid #229954;"
             "   border-radius: 5px;"
-            "   font-size: 12px;"
+            "   font-size: 13px;"
             "   font-weight: bold;"
+            "   padding: 5px;"
             "}"
             "DraggableElement:hover {"
             "   background-color: #229954;"
             "   border: 2px solid #1e8449;"
             "}"
-            );
+        );
         element->setPlaced(false);
         elements[elem.type] = element;
 
-        paletteLayout->addWidget(element, row, col);
-        col++;
-        if (col > 1) {
-            col = 0;
-            row++;
-        }
+        paletteLayout->addWidget(element);   // по одному в строку
     }
+
+    // Растягивающий spacer внизу, чтобы элементы были прижаты к верху
+    paletteLayout->addStretch();
 }
 
 void BoardDesignerWidget::addElement(const QString &elementType, const QString &displayName,
@@ -201,13 +219,18 @@ void BoardDesignerWidget::addElement(const QString &elementType, const QString &
 
     connect(element, &DraggableElement::elementMoved,
             this, &BoardDesignerWidget::onElementMoved);
-    connect(element, &DraggableElement::elementResized,
-            this, &BoardDesignerWidget::onElementResized);
+    /*connect(element, &DraggableElement::elementResized,
+            this, &BoardDesignerWidget::onElementResized);*/
+    connect(element, &DraggableElement::elementGeometryChanged,
+        this, &BoardDesignerWidget::onElementGeometryChanged);
     connect(element, &DraggableElement::elementDeleted,
             this, &BoardDesignerWidget::onElementDeleted);
     connect(element, &DraggableElement::elementPropertiesRequested,
             this, &BoardDesignerWidget::onElementPropertiesRequested);
-
+            
+    connect(element, &DraggableElement::elementReleased, this, [this](DraggableElement *) {
+        designerArea->setActiveGuides(QList<QLine>());
+    });
     emit layoutChanged();
 }
 
@@ -347,32 +370,260 @@ void BoardDesignerWidget::onElementMoved(DraggableElement *element, int deltaX, 
     int newX = geom.x() + deltaX;
     int newY = geom.y() + deltaY;
 
-    // Ограничиваем перемещение границами области дизайнера
-    int maxX = designerArea->width()  - geom.width();
+    int maxX = designerArea->width() - geom.width();
     int maxY = designerArea->height() - geom.height();
     newX = qBound(0, newX, qMax(0, maxX));
     newY = qBound(0, newY, qMax(0, maxY));
 
-    element->setGeometry(newX, newY, geom.width(), geom.height());
+    int gridX = qRound(double(newX) / GRID_SIZE) * GRID_SIZE;
+    int gridY = qRound(double(newY) / GRID_SIZE) * GRID_SIZE;
+
+    int finalX = newX;
+    int finalY = newY;
+    QList<QLine> guides = findAlignmentGuides(element, newX, newY, finalX, finalY);
+
+    if (guides.isEmpty()) {
+        finalX = gridX;
+        finalY = gridY;
+    }
+
+    element->setGeometry(finalX, finalY, geom.width(), geom.height());
+
+    designerArea->setActiveGuides(guides);
+
     emit layoutChanged();
 }
 
-void BoardDesignerWidget::onElementResized(DraggableElement *element, int deltaWidth, int deltaHeight)
+QList<QLine> BoardDesignerWidget::findAlignmentGuides(DraggableElement *element, int newX, int newY, int &snappedX, int &snappedY) {
+    QList<QLine> guides; 
+    QRect geom = element->geometry();
+    snappedX = newX;
+    snappedY = newY;
+
+    bool snappedXFlag = false;
+    bool snappedYFlag = false;
+
+    for (auto it = placedElements.begin(); it != placedElements.end(); ++it) {
+        DraggableElement *other = it.value();
+        if (other == element) continue;
+
+        QRect og = other->geometry();
+
+        // ВЕРТИКАЛЬНАЯ ЛИНИЯ
+
+        if(!snappedXFlag && qAbs(newX - og.left()) < SNAP_THRESHOLD) {
+            snappedX = og.left();
+            snappedXFlag = true;
+        }
+
+        if(!snappedXFlag && qAbs(newX-og.right()) < SNAP_THRESHOLD) {
+            snappedX = og.right();
+            snappedXFlag = true;
+        }
+
+        if(!snappedXFlag && qAbs(newX + geom.width() - og.left()) < SNAP_THRESHOLD) {
+            snappedX = og.left() - geom.width();
+            snappedXFlag = true;
+        }
+
+        if(!snappedXFlag && qAbs(newX +geom.width() - og.right()) < SNAP_THRESHOLD) {
+            snappedX = og.right() - geom.width();
+            snappedXFlag = true;
+        }
+
+        if(!snappedXFlag && qAbs((newX + geom.width()/2) - (og.left() + og.width()/2)) < SNAP_THRESHOLD) {
+            snappedX = (og.left() - og.width()/2) - geom.width()/2;
+            snappedXFlag = true;
+        }
+
+        // ГОРИЗОНТАЛНАЯ ЛИНИЯ
+
+        if(!snappedYFlag && qAbs(newY - og.top()) < SNAP_THRESHOLD) {
+            snappedY = og.top();
+            snappedYFlag = true;
+        }
+
+        if(!snappedYFlag && qAbs(newY - og.bottom()) < SNAP_THRESHOLD) {
+            snappedY = og.bottom();
+            snappedYFlag = true;
+        }
+
+        if(!snappedYFlag && qAbs((newY + geom.height()) - og.top()) < SNAP_THRESHOLD) {
+            snappedY = og.top() - geom.height();
+            snappedYFlag = true;
+        }
+
+        if(!snappedYFlag && qAbs((newY + geom.height()) - og.bottom()) < SNAP_THRESHOLD) {
+            snappedY = og.bottom() - geom.height();
+            snappedYFlag = true;
+        }
+        if(!snappedYFlag && qAbs((newY + geom.height()/2) - (og.top() + og.height()/2)) < SNAP_THRESHOLD) {
+            snappedY = (og.top() + og.height()/2) - geom.height()/2;
+            snappedYFlag = true;
+        }
+    }
+
+    if (snappedXFlag) {
+        int lineX = snappedX;
+        if (qAbs((snappedX + geom.width()) - snappedX) == 0) {
+        } else {
+            lineX = snappedX;
+        }
+        if (qAbs(snappedX - newX) < SNAP_THRESHOLD) lineX = snappedX;
+        else if (qAbs((snappedX + geom.width()) - (newX + geom.width())) < SNAP_THRESHOLD) lineX = snappedX + geom.width();
+        else lineX = snappedX + geom.width()/2;
+
+        int topY = qMin(snappedY, newY);
+        int bottomY = qMax(snappedY + geom.height(), newY + geom.height());
+        for (auto it = placedElements.begin(); it != placedElements.end(); ++it) {
+            if (it.value() != element) {
+                QRect og = it.value()->geometry();
+                topY = qMin(topY, og.top());
+                bottomY = qMax(bottomY, og.bottom());
+            }
+        }
+        guides.append(QLine(lineX, topY, lineX, bottomY));
+    }
+
+    if (snappedYFlag) {
+        int lineY = snappedY;
+        if (qAbs(snappedY - newY) < SNAP_THRESHOLD) lineY = snappedY;
+        else if (qAbs((snappedY + geom.height()) - (newY + geom.height())) < SNAP_THRESHOLD) lineY = snappedY + geom.height();
+        else lineY = snappedY + geom.height()/2;
+
+        int leftX = qMin(snappedX, newX);
+        int rightX = qMax(snappedX + geom.width(), newX + geom.width());
+        for (auto it = placedElements.begin(); it != placedElements.end(); ++it) {
+            if (it.value() != element) {
+                QRect og = it.value()->geometry();
+                leftX = qMin(leftX, og.left());
+                rightX = qMax(rightX, og.right());
+            }
+        }
+        guides.append(QLine(leftX, lineY, rightX, lineY));
+    }
+
+    return guides;
+}
+
+QList<QLine> BoardDesignerWidget::findSizeGuides(DraggableElement *element, const QRect &newGeom,
+                                                  int &snappedWidth, int &snappedHeight)
+{
+    QList<QLine> guides;
+    snappedWidth = newGeom.width();
+    snappedHeight = newGeom.height();
+
+    bool widthSnapped = false;
+    bool heightSnapped = false;
+
+    for (auto it = placedElements.begin(); it != placedElements.end(); ++it) {
+        DraggableElement *other = it.value();
+        if (other == element) continue;
+
+        QRect og = other->geometry();
+
+        // Совпадение ширины
+        if (!widthSnapped && qAbs(newGeom.width() - og.width()) < SNAP_THRESHOLD) {
+            snappedWidth = og.width();
+            widthSnapped = true;
+            
+            // Рисуем вертикальную линию по правому краю текущего элемента
+            int lineX = newGeom.x() + snappedWidth;
+            int topY = qMin(newGeom.y(), og.y());
+            int bottomY = qMax(newGeom.y() + newGeom.height(), og.y() + og.height());
+            guides.append(QLine(lineX, topY, lineX, bottomY));
+        }
+
+        // Совпадение высоты
+        if (!heightSnapped && qAbs(newGeom.height() - og.height()) < SNAP_THRESHOLD) {
+            snappedHeight = og.height();
+            heightSnapped = true;
+            
+            // Рисуем горизонтальную линию по нижнему краю текущего элемента
+            int lineY = newGeom.y() + snappedHeight;
+            int leftX = qMin(newGeom.x(), og.x());
+            int rightX = qMax(newGeom.x() + newGeom.width(), og.x() + og.width());
+            guides.append(QLine(leftX, lineY, rightX, lineY));
+        }
+    }
+
+    return guides;
+}
+
+// void BoardDesignerWidget::onElementResized(DraggableElement *element, int deltaWidth, int deltaHeight)
+// {
+//     if (!element) return;
+//     QRect geom = element->geometry();
+
+//     int newWidth = geom.width() + deltaWidth;
+//     int newHeight = geom.height() + deltaHeight;
+
+//     // Не даём элементу вылезти за пределы области дизайнера и не даём сжаться
+//     // меньше собственного минимального размера самого элемента
+//     int maxWidth = qMax(element->minimumWidth(), designerArea->width() - geom.x());
+//     int maxHeight = qMax(element->minimumHeight(), designerArea->height() - geom.y());
+//     newWidth = qBound(element->minimumWidth(), newWidth, maxWidth);
+//     newHeight = qBound(element->minimumHeight(), newHeight, maxHeight);
+
+//     element->setGeometry(geom.x(), geom.y(), newWidth, newHeight);
+//     emit layoutChanged();
+// }
+
+void BoardDesignerWidget::onElementGeometryChanged(DraggableElement *element, const QRect &newGeometry)
 {
     if (!element) return;
-    QRect geom = element->geometry();
 
-    int newWidth = geom.width() + deltaWidth;
-    int newHeight = geom.height() + deltaHeight;
+    QRect geom = newGeometry;
 
-    // Не даём элементу вылезти за пределы области дизайнера и не даём сжаться
-    // меньше собственного минимального размера самого элемента
-    int maxWidth = qMax(element->minimumWidth(), designerArea->width() - geom.x());
-    int maxHeight = qMax(element->minimumHeight(), designerArea->height() - geom.y());
-    newWidth = qBound(element->minimumWidth(), newWidth, maxWidth);
-    newHeight = qBound(element->minimumHeight(), newHeight, maxHeight);
+    // 1. Ограничения границами области
+    int minX = 0, minY = 0;
+    int maxX = designerArea->width();
+    int maxY = designerArea->height();
 
-    element->setGeometry(geom.x(), geom.y(), newWidth, newHeight);
+    if (geom.left() < minX) geom.setLeft(minX);
+    if (geom.top() < minY) geom.setTop(minY);
+    if (geom.right() > maxX) geom.setRight(maxX);
+    if (geom.bottom() > maxY) geom.setBottom(maxY);
+
+    // 2. Минимальный размер
+    if (geom.width() < element->minimumWidth()) geom.setWidth(element->minimumWidth());
+    if (geom.height() < element->minimumHeight()) geom.setHeight(element->minimumHeight());
+
+    // 3. Ищем совпадение размеров с другими элементами
+    int snappedWidth = geom.width();
+    int snappedHeight = geom.height();
+    QList<QLine> sizeGuides = findSizeGuides(element, geom, snappedWidth, snappedHeight);
+
+    if (!sizeGuides.isEmpty()) {
+        // Применяем snap по размеру
+        geom.setWidth(snappedWidth);
+        geom.setHeight(snappedHeight);
+    }
+
+    // 4. Ищем совпадение позиций (для линий выравнивания по краям)
+    int snappedX = geom.x();
+    int snappedY = geom.y();
+    QList<QLine> alignGuides = findAlignmentGuides(element, geom.x(), geom.y(), snappedX, snappedY);
+    
+    if (!alignGuides.isEmpty()) {
+        geom.moveLeft(snappedX);
+        geom.moveTop(snappedY);
+    } else if (sizeGuides.isEmpty()) {
+        // Если никаких совпадений нет — применяем snap-to-grid
+        int gridX = qRound(double(geom.x()) / GRID_SIZE) * GRID_SIZE;
+        int gridY = qRound(double(geom.y()) / GRID_SIZE) * GRID_SIZE;
+        geom.moveLeft(gridX);
+        geom.moveTop(gridY);
+    }
+
+    element->setGeometry(geom);
+
+    // 5. Показываем все линии
+    QList<QLine> allGuides;
+    allGuides.append(sizeGuides);
+    allGuides.append(alignGuides);
+    designerArea->setActiveGuides(allGuides);
+
     emit layoutChanged();
 }
 

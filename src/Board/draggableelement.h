@@ -7,12 +7,23 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QPainter>
+#include <QPaintEvent>
+#include <qcoreevent.h>
+#include <qevent.h>
+#include <QRect>
 
 class DraggableElement : public QLabel
 {
     Q_OBJECT
 
 public:
+    enum class ResizeHandle {
+        None, 
+        TopLeft, Top, TopRight,
+        Left, Right,
+        BottomLeft, Bottom, BottomRight
+    };
+
     explicit DraggableElement(const QString &elementType, const QString &displayName,
                               const QString &defaultText, QWidget *parent = nullptr);
 
@@ -33,20 +44,28 @@ public:
 signals:
     void elementMoved(DraggableElement *element, int deltaX, int deltaY);
     void elementResized(DraggableElement *element, int deltaWidth, int deltaHeight);
+    void elementGeometryChanged(DraggableElement *element, const QRect &newGeometry);
     void elementDeleted(DraggableElement *element);
     void elementPropertiesRequested(DraggableElement *element);
+    void elementReleased(DraggableElement *element);
+    
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-    void mouseDoubleClickEvent(QMouseEvent *event) override;   // двойной клик — удалить с макета
+    void mouseDoubleClickEvent(QMouseEvent *event) override; 
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
-    void contextMenuEvent(QContextMenuEvent *event) override;  // правый клик — свойства элемента
+    void contextMenuEvent(QContextMenuEvent *event) override;  
+    void paintEvent(QPaintEvent *event) override;
+    void enterEvent(QEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    
 
 private:
     bool isInResizeCorner(const QPoint &pos) const;
+    void updateCursorForHandle(ResizeHandle handle);
 
     QString elementType;
     QString displayName;
@@ -56,6 +75,11 @@ private:
     QPoint dragStartPosition;
     bool isDragging;
     bool isResizing;
+    ResizeHandle handleAt(const QPoint &pos) const;
+    ResizeHandle activeHandle;
+    QRect originalGeometry;
+    bool showHandles;
+
 };
 
 #endif
