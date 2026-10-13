@@ -3,7 +3,13 @@ name: Build Qt Application
 on:
   push:
     branches: [ "main", "master" ]
+    tags:
+      - 'v*' # Запускать создание релиза только при пуше тега (например, v1.0.0)
   workflow_dispatch:
+
+# Разрешаем экшенам создавать релизы и прикреплять файлы
+permissions:
+  contents: write
 
 jobs:
   build-linux:
@@ -11,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install Qt5
         run: |
@@ -24,19 +30,27 @@ jobs:
       - name: Build
         run: cmake --build build
 
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      - name: Upload Linux artifact (для тестов во вкладке Actions)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
         with:
           name: InformationBoard-Linux
           path: build/InformationBoard
           retention-days: 14
+
+      - name: Upload Linux to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/InformationBoard
+          generate_release_notes: true
 
   build-windows:
     name: Build Release on Windows
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install Qt via aqt
         run: |
@@ -65,10 +79,34 @@ jobs:
         shell: cmd
         run: D:\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe --release --no-translations dist\InformationBoard.exe
 
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      - name: Create Single EXE (7z SFX)
+        shell: cmd
+        run: |
+          :: Скачиваем 7-Zip
+          curl -L -o 7z.exe https://7-zip.org/a/7z2408-x64.exe
+          7z.exe /S /D=C:\7z
+          
+          :: Создаём конфиг для абсолютно скрытой распаковки и запуска
+          echo ;!@Install@!UTF-8!> config.txt
+          echo Title="Information Board">> config.txt
+          echo RunProgram="InformationBoard.exe">> config.txt
+          echo GUIMode="2">> config.txt
+          echo ;!@InstallEnd@!>> config.txt
+          
+          :: Пакуем всё в один файл
+          C:\7z\7z.exe a -sfx"C:\7z\7z.sfx" -r dist\InformationBoard_Single.exe dist\* config.txt
+
+      - name: Upload Windows artifact (для тестов во вкладке Actions)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
         with:
-          name: InformationBoard-Windows
-          path: dist/
+          name: InformationBoard-Windows-Single
+          path: dist/InformationBoard_Single.exe
           retention-days: 14
-        
+
+      - name: Upload Windows Single EXE to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/InformationBoard_Single.exe
+          generate_release_notes: true
