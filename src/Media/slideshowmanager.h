@@ -15,6 +15,7 @@ public:
 
     void setFolderPath(const QString &path);
     void setIntervalSeconds(int seconds);
+    void setSelectedFiles(const QStringList &files);
     void setEnabled(bool enabled);
 
     void start();
@@ -31,6 +32,7 @@ private:
 
     QString m_folderPath;
     QStringList m_images;
+    QStringList m_selectedFiles;
     int m_currentIndex;
     int m_intervalSeconds;
     bool m_enabled;

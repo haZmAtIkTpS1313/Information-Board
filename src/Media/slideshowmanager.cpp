@@ -1,6 +1,7 @@
 #include "slideshowmanager.h"
 #include <QDir>
 #include <QDebug>
+#include <qobject.h>
 
 SlideshowManager::SlideshowManager(QObject *parent)
     : QObject(parent)
@@ -30,6 +31,21 @@ void SlideshowManager::setFolderPath(const QString &path)
     }
 }
 
+void SlideshowManager::setSelectedFiles(const QStringList &files)
+{
+    m_selectedFiles = files;
+    m_currentIndex = -1;
+    rescan();
+
+    if (m_enabled) {
+        if (m_images.isEmpty()) {
+            emit imageChanged(QString());
+        } else {
+            onTick();
+        }
+    }
+}
+
 void SlideshowManager::setIntervalSeconds(int seconds)
 {
     m_intervalSeconds = qMax(2, seconds);
@@ -49,6 +65,15 @@ void SlideshowManager::setEnabled(bool enabled)
 void SlideshowManager::rescan()
 {
     m_images.clear();
+    if (!m_selectedFiles.isEmpty()) {
+        for (const QString &file : m_selectedFiles) {
+            if (QFile::exists(file)) {
+                m_images << file;
+            }
+        }
+        qDebug() << "Используются конкретные файлы:" << m_images.size();
+        return;
+    }
     QDir dir(m_folderPath);
     if (!dir.exists()) return;
 

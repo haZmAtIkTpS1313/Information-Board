@@ -20,6 +20,7 @@
 #include <qnamespace.h>
 #include <qtablewidget.h>
 #include <algorithm>
+#include <QDebug>
 
 static const char *kDayShort[7] = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
 
@@ -111,6 +112,16 @@ void ScheduleWidget::refreshTable()
 
     QList<ScheduleEntry> entries = m_manager->entries();
 
+    // qDebug() << "refreshTable: записей " << entries.size();
+    // for (const auto &e : entries) {
+    //     QDateTime next = m_manager->nextOccurrence(e);
+    //     qDebug() << "Запись:" << e.name
+    //              << "| время:" << e.time.toString("HH:mm")
+    //              << "| дни:" << e.days.values()
+    //              << "| enabled:" << e.enabled
+    //              << "| следующее:" << (next.isValid() ? next.toString("dd.MM.yyyy HH:mm") : "НЕВАЛИДНО");
+    // }
+    
     std::sort(entries.begin(), entries.end(), [this](const ScheduleEntry &a, const ScheduleEntry &b) {
         QDateTime nextA = m_manager->nextOccurrence(a);
         QDateTime nextB = m_manager->nextOccurrence(b);

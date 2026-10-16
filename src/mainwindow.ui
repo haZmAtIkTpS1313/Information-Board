@@ -310,20 +310,6 @@ QPushButton[text^=&quot;⚙️&quot;]:hover {
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="quickLogoButton">
-             <property name="text">
-              <string>🏢 Логотип</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QPushButton" name="quickWeatherButton">
-             <property name="text">
-              <string>☀️ Погода</string>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="2">
             <widget class="QCheckBox" name="alwaysOnTopCheck">
              <property name="text">
@@ -338,7 +324,7 @@ QPushButton[text^=&quot;⚙️&quot;]:hover {
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
+           <item row="1" column="0">
             <widget class="QPushButton" name="settingsButton">
              <property name="text">
               <string>⚙️ Настройки</string>

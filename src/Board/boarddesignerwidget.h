@@ -9,7 +9,10 @@
 #include <QPaintEvent>
 #include <QLine>
 #include <QScrollArea>
+#include <QPushButton>
+#include <QComboBox>
 #include <qboxlayout.h>
+#include <qscrollarea.h>
 #include "draggableelement.h"
 
 struct ShiftControll{
@@ -52,9 +55,11 @@ public:
     QList<ElementConfig> getCurrentLayout() const;
     void applyLayout(const QList<ElementConfig> &layout);
 
+    void setBoardResolution(int windth, int height);
+    int getBoardWidth() const { return currentBoardWidth; }
+    int getBoardHeight() const { return currentBoardHeight; }
 signals:
     void layoutChanged();
-
 public slots:
     void resetToDefaultLayout();
 
@@ -69,6 +74,7 @@ private slots:
     void onElementGeometryChanged(DraggableElement *element, const QRect &newGeometry);
     void onElementDeleted(DraggableElement *element);
     void onElementPropertiesRequested(DraggableElement *element);
+    void onApplyResolution();
 private:
     // === НОВЫЕ КОНСТАНТЫ ===
     static const int GRID_SIZE = 10;       // шаг сетки в пикселях
@@ -119,9 +125,14 @@ private:
     QScrollArea *paletteScrollArea;
     QWidget *paletteWidget;
     QVBoxLayout *paletteLayout;
-    DesignerArea *designerArea;                    // <-- ТЕПЕРЬ DesignerArea, а не QWidget
+    DesignerArea *designerArea;                    
+    QScrollArea *designerScrollArea;
     QMap<QString, DraggableElement*> elements;
     QMap<QString, DraggableElement*> placedElements;
+    int currentBoardWidth;
+    int currentBoardHeight;
+    QComboBox *resolutionCombo;
+    QPushButton *applyResolutionBtn;
 };
 
 #endif

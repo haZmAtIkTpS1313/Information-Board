@@ -1,12 +1,15 @@
 #include "boarddesignerwidget.h"
 #include "elementpropertiesdialog.h"
-#include "src/Board/draggableelement.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QDebug>
+#include <QComboBox>
+#include <QPushButton>
+#include <QInputDialog>
+#include <QScrollArea>
 #include <qglobal.h>
 #include <qpaintdevice.h>
 
@@ -36,50 +39,60 @@ void BoardDesignerWidget::setupUI()
 
     QLabel *titleLabel = new QLabel(
         "🎨 Редактор макета доски — перетащить: переместить · уголок: изменить размер · "
-        "ПКМ: свойства (цвет, шрифт, текст) · двойной клик: удалить", this);
+        "ПКМ: свойства · двойной клик: удалить", this);
     titleLabel->setStyleSheet(
-        "QLabel {"
-        "   font-size: 16px;"
-        "   font-weight: bold;"
-        "   color: #2c3e50;"
-        "   padding: 10px;"
-        "   background-color: #ecf0f1;"
-        "   border-radius: 5px;"
-        "}"
+        "QLabel { font-size: 16px; font-weight: bold; color: #2c3e50; padding: 10px; "
+        "background-color: #ecf0f1; border-radius: 5px; }"
     );
     titleLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(titleLabel);
 
+    QHBoxLayout *resolutionLayout = new QHBoxLayout();
+    resolutionLayout->setContentsMargins(0, 0, 0, 0);
+    
+    resolutionCombo = new QComboBox(this);
+    resolutionCombo->addItems({
+        "800 x 640 (По умолчанию)",
+        "1280 x 720 (HD)",
+        "1920 x 1080 (Full HD)",
+        "2560 x 1440 (2K)",
+        "3840 x 2160 (4K)",
+        "Пользовательское..."
+    });
+    resolutionCombo->setCurrentIndex(0);
+    
+    applyResolutionBtn = new QPushButton("🔄 Применить размер", this);
+    applyResolutionBtn->setStyleSheet(
+        "QPushButton { background-color: #3498db; color: white; padding: 6px 12px; "
+        "border-radius: 4px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #2980b9; }"
+    );
+
+    resolutionLayout->addWidget(new QLabel("Целевое разрешение доски:", this));
+    resolutionLayout->addWidget(resolutionCombo);
+    resolutionLayout->addWidget(applyResolutionBtn);
+    resolutionLayout->addStretch();
+    
+    mainLayout->addLayout(resolutionLayout);
+
     QHBoxLayout *contentLayout = new QHBoxLayout();
     contentLayout->setSpacing(15);
 
-    // === ПАНЕЛЬ ЭЛЕМЕНТОВ (слева, с прокруткой) ===
     paletteWidget = new QWidget();
-    paletteWidget->setStyleSheet(
-        "QWidget {"
-        "   background-color: #f8f9fa;"
-        "}"
-    );
+    paletteWidget->setStyleSheet("QWidget { background-color: #f8f9fa; }");
     paletteLayout = new QVBoxLayout(paletteWidget);
     paletteLayout->setSpacing(8);
     paletteLayout->setContentsMargins(10, 10, 10, 10);
     paletteLayout->setAlignment(Qt::AlignTop);
 
-    // Заголовок палитры
     QLabel *paletteTitle = new QLabel("Доступные элементы", paletteWidget);
     paletteTitle->setStyleSheet(
-        "QLabel {"
-        "   font-weight: bold;"
-        "   color: #2c3e50;"
-        "   padding: 8px;"
-        "   background-color: #bdc3c7;"
-        "   border-radius: 4px;"
-        "}"
+        "QLabel { font-weight: bold; color: #2c3e50; padding: 8px; "
+        "background-color: #bdc3c7; border-radius: 4px; }"
     );
     paletteTitle->setAlignment(Qt::AlignCenter);
     paletteLayout->addWidget(paletteTitle);
 
-    // Скролл-область для палитры
     paletteScrollArea = new QScrollArea(this);
     paletteScrollArea->setWidget(paletteWidget);
     paletteScrollArea->setWidgetResizable(true);
@@ -87,43 +100,33 @@ void BoardDesignerWidget::setupUI()
     paletteScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     paletteScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     paletteScrollArea->setStyleSheet(
-        "QScrollArea {"
-        "   background-color: #f8f9fa;"
-        "   border: 2px solid #bdc3c7;"
-        "   border-radius: 5px;"
-        "}"
-        "QScrollBar:vertical {"
-        "   background: #ecf0f1;"
-        "   width: 12px;"
-        "   border-radius: 6px;"
-        "}"
-        "QScrollBar::handle:vertical {"
-        "   background: #95a5a6;"
-        "   border-radius: 6px;"
-        "   min-height: 30px;"
-        "}"
-        "QScrollBar::handle:vertical:hover {"
-        "   background: #7f8c8d;"
-        "}"
+        "QScrollArea { background-color: #f8f9fa; border: 2px solid #bdc3c7; border-radius: 5px; }"
+        "QScrollBar:vertical { background: #ecf0f1; width: 12px; border-radius: 6px; }"
+        "QScrollBar::handle:vertical { background: #95a5a6; border-radius: 6px; min-height: 30px; }"
     );
 
     contentLayout->addWidget(paletteScrollArea);
 
-    // === ОБЛАСТЬ ДИЗАЙНЕРА (справа) ===
     designerArea = new DesignerArea(this);
     designerArea->setStyleSheet(
-        "QWidget {"
-        "   background-color: #2c3e50;"
-        "   border: 3px solid #34495e;"
-        "   border-radius: 5px;"
-        "}"
+        "QWidget { background-color: #2c3e50; border: 3px solid #34495e; border-radius: 5px; }"
     );
     designerArea->setAcceptDrops(true);
     designerArea->setMouseTracking(true);
+    designerArea->setFixedSize(currentBoardWidth, currentBoardHeight); 
 
-    contentLayout->addWidget(designerArea, 1);
+    designerScrollArea = new QScrollArea(this);
+    designerScrollArea->setWidget(designerArea);
+    designerScrollArea->setWidgetResizable(false); 
+    designerScrollArea->setAlignment(Qt::AlignCenter);
+    designerScrollArea->setStyleSheet(
+        "QScrollArea { border: 2px solid #bdc3c7; border-radius: 5px; background-color: #ecf0f1; }"
+    );
 
+    contentLayout->addWidget(designerScrollArea, 1);
     mainLayout->addLayout(contentLayout, 1);
+
+    connect(applyResolutionBtn, &QPushButton::clicked, this, &BoardDesignerWidget::onApplyResolution);
 }
 
 void BoardDesignerWidget::createElementPalette()
@@ -150,7 +153,7 @@ void BoardDesignerWidget::createElementPalette()
         {"pressure", "Давление", "1013 гПа", 100, 70},
         {"countdown", "Обратный отсчёт", "До события: --:--:--", 240, 70},
         {"announcement", "Объявление", "Объявлений пока нет", 480, 70},
-        {"ticker", "Бегущая строка", "Новости...", 400, 60}
+        //{"ticker", "Бегущая строка", "Новости...", 400, 60}
     };
 
     for (const auto &elem : elementsList) {
@@ -287,6 +290,9 @@ void BoardDesignerWidget::applyLayout(const QList<ElementConfig> &layout)
 
 void BoardDesignerWidget::resetToDefaultLayout()
 {
+    setBoardResolution(800, 640);
+    resolutionCombo->setCurrentIndex(0);
+
     clearDesigner();
 
     addElement("logo", "Логотип", "🏢 Логотип", 20, 20, 120, 80);
@@ -306,7 +312,7 @@ void BoardDesignerWidget::resetToDefaultLayout()
     // addElement("sunset", "Закат", "20:30", 140, 470, 100, 70);
     addElement("countdown", "Обратный отсчёт", "До события: --:--:--", 20, 470, 240, 70);
     addElement("announcement", "Объявление", "Объявлений пока нет", 280, 470, 480, 70);
-    addElement("ticker", "Бегущая строка", "Новости...", 20, 560, 760, 60);
+    //addElement("ticker", "Бегущая строка", "Новости...", 20, 560, 760, 60);
 
     emit layoutChanged();
 }
@@ -650,4 +656,59 @@ void BoardDesignerWidget::onElementPropertiesRequested(DraggableElement *element
         element->setCustomStyle(dialog.buildStyle());
         emit layoutChanged();
     }
+}
+void BoardDesignerWidget::onApplyResolution()
+{
+    QString text = resolutionCombo->currentText();
+    int newW = currentBoardWidth;
+    int newH = currentBoardHeight;
+
+    if (text.contains("800")) { newW = 800; newH = 640; }
+    else if (text.contains("1280")) { newW = 1280; newH = 720; }
+    else if (text.contains("1920")) { newW = 1920; newH = 1080; }
+    else if (text.contains("2560")) { newW = 2560; newH = 1440; }
+    else if (text.contains("3840")) { newW = 3840; newH = 2160; }
+    else {
+        bool ok;
+        QString custom = QInputDialog::getText(this, "Пользовательское разрешение", 
+            "Введите ширину и высоту через 'x' (например, 1920x1080):", 
+            QLineEdit::Normal, "1920x1080", &ok);
+        if (!ok) return;
+        QStringList parts = custom.split('x', Qt::SkipEmptyParts);
+        if (parts.size() == 2) {
+            newW = parts[0].toInt();
+            newH = parts[1].toInt();
+        }
+    }
+
+    if (newW > 0 && newH > 0) {
+        setBoardResolution(newW, newH);
+    }
+}
+
+void BoardDesignerWidget::setBoardResolution(int width, int height)
+{
+    if (width <= 0 || height <= 0) return;
+
+    double scaleX = (double)width / currentBoardWidth;
+    double scaleY = (double)height / currentBoardHeight;
+
+    for (auto it = placedElements.begin(); it != placedElements.end(); ++it) {
+        DraggableElement *el = it.value();
+        QRect geom = el->geometry();
+        
+        geom.setX(qRound(geom.x() * scaleX));
+        geom.setY(qRound(geom.y() * scaleY));
+        geom.setWidth(qMax(20, qRound(geom.width() * scaleX))); 
+        geom.setHeight(qMax(20, qRound(geom.height() * scaleY))); 
+        
+        el->setGeometry(geom);
+    }
+
+    currentBoardWidth = width;
+    currentBoardHeight = height;
+
+    designerArea->setFixedSize(width, height);
+    
+    emit layoutChanged();
 }

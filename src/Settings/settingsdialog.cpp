@@ -11,6 +11,14 @@
 #include <QSettings>
 #include <QDir>
 #include <QFileDialog>
+#include <qboxlayout.h>
+#include <qfiledialog.h>
+#include <qfileinfo.h>
+#include <qgroupbox.h>
+#include <qlist.h>
+#include <qlistwidget.h>
+#include <qnamespace.h>
+#include <qpushbutton.h>
 #include "../apikeys.h"
 
 static const char *kDefaultEmergencyText = "⚠️ ЭКСТРЕННАЯ СИТУАЦИЯ — СЛЕДУЙТЕ ИНСТРУКЦИЯМ ⚠️";
@@ -114,6 +122,31 @@ void SettingsDialog::setupUI()
     slideshowForm->addRow("Интервал смены картинок:", slideshowIntervalSpin);
     mainLayout->addLayout(slideshowForm);
 
+    QGroupBox *filesGroup = new QGroupBox("Или выберите конкретные файлы", this);
+    QVBoxLayout *filesLayout = new QVBoxLayout(filesGroup);
+
+    selectedFilesList = new QListWidget(this);
+    selectedFilesList->setMaximumHeight(120);
+    filesLayout->addWidget(selectedFilesList);
+
+    QHBoxLayout *filesButtonsLayot = new QHBoxLayout();
+    addFilesButton = new QPushButton("Добавить файл",this);
+    removeFilesButton = new QPushButton("Удалить выбранное", this);
+    removeFilesButton->setEnabled(selectedFilesList);
+    filesButtonsLayot->addWidget(addFilesButton);
+    filesButtonsLayot->addWidget(removeFilesButton);
+    filesButtonsLayot->addStretch();
+    filesLayout->addLayout(filesButtonsLayot);
+
+    QLabel *filesHint = new QLabel(
+        "Если выбраны конкретные файлы, папка выше игнорируется. Оставьте список пустым, чтобы использовать папку.",
+        this);
+    filesHint->setWordWrap(true);
+    filesHint->setStyleSheet("color: #6c757d; font-size: 11px;");
+    filesLayout->addWidget(filesHint);
+
+    mainLayout->addWidget(filesGroup);
+
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttons, &QDialogButtonBox::accepted, this, &SettingsDialog::onSave);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -125,6 +158,12 @@ void SettingsDialog::setupUI()
     connect(browseSoundButton, &QPushButton::clicked, this, &SettingsDialog::onBrowseEmergencySound);
     connect(browseWarningSoundButton, &QPushButton::clicked, this, &SettingsDialog::onBrowseWeatherWarningSound);
     connect(browseFolderButton, &QPushButton::clicked, this, &SettingsDialog::onBrowseSlideshowFolder);
+
+    connect(addFilesButton, &QPushButton::clicked, this, &SettingsDialog::onAddSlideshowFiles);
+    connect(removeFilesButton, &QPushButton::clicked, this, &SettingsDialog::onRemoveSlideshowFiles);
+    connect(selectedFilesList, &QListWidget::currentRowChanged, this, [this](int row) {
+        removeFilesButton->setEnabled(row >= 0);
+    });
 }
 
 void SettingsDialog::onBrowseSlideshowFolder()
@@ -153,6 +192,42 @@ void SettingsDialog::onBrowseWeatherWarningSound()
     }
 }
 
+void SettingsDialog::onAddSlideshowFiles()
+{
+    QStringList filters;
+    filters << "Изображения (*.png *.jpg *.jpeg *.bmp *.gif *.webp *.tif *.tiff *.heic *.heif *.avif)"
+            << "Все файлы (*)";
+    
+            QStringList files = QFileDialog::getOpenFileNames(
+                this, "Выберите изображения для слайдшоу", "", filters.join(";;")
+            );
+
+            for (const QString &file :files) {
+                bool alreadyAdded = false;
+                for (int i = 0; i < selectedFilesList->count(); ++i) {
+                    if (selectedFilesList->item(i)->data(Qt::UserRole).toString() == false) {
+                        alreadyAdded = true;
+                        break;
+                    }
+                }
+                if (!alreadyAdded) {
+                    QListWidgetItem *item = new QListWidgetItem(QFileInfo(file).fileName());
+                    item->setData(Qt::UserRole, file);
+                    item->setToolTip(file);
+                    selectedFilesList->addItem(item);
+                }
+            }
+}
+
+void SettingsDialog::onRemoveSlideshowFiles()
+{
+    QList<QListWidgetItem*> selected = selectedFilesList->selectedItems();
+    for (QListWidgetItem *item : selected) {
+        delete selectedFilesList->takeItem(selectedFilesList->row(item));
+    } 
+    removeFilesButton->setEnabled(selectedFilesList->currentRow() >= 0);
+} 
+
 void SettingsDialog::loadSettings()
 {
     QSettings settings(settingsFilePath(), QSettings::IniFormat);
@@ -168,6 +243,17 @@ void SettingsDialog::loadSettings()
     slideshowEnabledCheck->setChecked(settings.value("slideshow/enabled", false).toBool());
     slideshowFolderEdit->setText(settings.value("slideshow/folderPath").toString());
     slideshowIntervalSpin->setValue(settings.value("slideshow/intervalSeconds", 10).toInt());
+
+    selectedFilesList->clear();
+    QStringList savedFiles = settings.value("slideshow/selectedFiles").toStringList();
+    for (const QString &file :savedFiles) {
+        if (QFile::exists(file)) {
+            QListWidgetItem *item = new QListWidgetItem(QFileInfo(file).fileName());
+            item->setData(Qt::UserRole, file);
+            item->setToolTip(file);
+            selectedFilesList->addItem(item);
+        }
+    }
 }
 
 void SettingsDialog::onSave()
@@ -182,6 +268,12 @@ void SettingsDialog::onSave()
     settings.setValue("slideshow/enabled", slideshowEnabledCheck->isChecked());
     settings.setValue("slideshow/folderPath", slideshowFolderEdit->text().trimmed());
     settings.setValue("slideshow/intervalSeconds", slideshowIntervalSpin->value());
+
+    QStringList file;
+    for (int i = 0; i < selectedFilesList->count(); ++i) {
+        file << selectedFilesList->item(i)->data(Qt::UserRole).toString();
+    }
+    settings.setValue("slideshow/selectedFiles", file);
     settings.sync();
     accept();
 }

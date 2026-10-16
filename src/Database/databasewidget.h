@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <qpushbutton.h>
+#include <qvariant.h>
 #include "databaseemanager.h"
 
 class DatabaseWidget : public QWidget
@@ -31,6 +32,7 @@ private slots:
     void onRefreshTable();
     void onCellChanged(int row, int column);
     void onImportFromExcel();
+    
 
 private:
     void setupUI();

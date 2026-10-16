@@ -1,4 +1,3 @@
-
 #include "databasewidget.h"
 
 #include <QVBoxLayout>
@@ -8,6 +7,9 @@
 #include <QTableWidget>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QProcess>
+#include <QDir>
+#include <QRegularExpression>
 #include <QLabel>
 #include <QGroupBox>
 #include <QMessageBox>
@@ -79,9 +81,9 @@ void DatabaseWidget::setupUI()
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     addColumnBtn = new QPushButton("+ Добавить колонку", rightPanel);
     addRowBtn = new QPushButton("+ Добавить строку", rightPanel);
-    deleteRowBtn = new QPushButton("✖ Удалить строку", rightPanel);
-    showOnBoardBtn = new QPushButton("📋 Показать на доске", rightPanel);
-    refreshBtn = new QPushButton("🔄 Обновить", rightPanel);
+    deleteRowBtn = new QPushButton(" Удалить строку", rightPanel);
+    showOnBoardBtn = new QPushButton(" Показать на доске", rightPanel);
+    refreshBtn = new QPushButton(" Обновить", rightPanel);
 
     buttonLayout->addWidget(addColumnBtn);
     buttonLayout->addWidget(addRowBtn);
@@ -286,26 +288,49 @@ void DatabaseWidget::onCellChanged(int row, int column)
 
 void DatabaseWidget::onImportFromExcel()
 {
-    // Выбор файла
     QString filename = QFileDialog::getOpenFileName(
         this, 
-        "Выберите файл экспорта из Excel",
+        "Выберите файл для импорта",
         QString(),
-        "CSV файлы (*.csv);;Текст с табудяцией (*.txt, *.tsv);;Все файлы (*)"
+        "Excel и CSV файлы (*.xlsx *.xls *.csv);;Все файлы (*)"
     );
     if (filename.isEmpty()) return;
 
-    // Имя новой таблицы
-    QString tableName = QInputDialog::getText(
-        this, "Имя таблицы",
-        "Введите имя таблицы для импорта: "
-    );
+    QString tableName = QInputDialog::getText(this, "Имя таблицы", "Введите имя таблицы для импорта:");
     if (tableName.isEmpty()) return;
 
-    // Открываем файл
-    QFile file(filename);
+    QString actualFileToParse = filename;
+
+    if (filename.endsWith(".xlsx", Qt::CaseInsensitive) || filename.endsWith(".xls", Qt::CaseInsensitive)) {
+        QString tempCsv = QDir::tempPath() + "/import_temp.csv";
+        
+
+        QString pythonScript = QString(
+            "import pandas as pd\n"
+            "try:\n"
+            "    df = pd.read_excel(r'%1', engine='openpyxl' if r'%1'.endswith('.xlsx') else 'xlrd')\n"
+            "    df.to_csv(r'%2', index=False, sep=';', encoding='utf-8')\n"
+            "    print('SUCCESS')\n"
+            "except Exception as e:\n"
+            "    print(f'ERROR: {e}')\n"
+        ).arg(filename).arg(tempCsv);
+
+        QProcess process;
+        process.start("python3", QStringList() << "-c" << pythonScript);
+        process.waitForFinished(10000);
+
+        QString output = process.readAllStandardOutput().trimmed();
+        if (output != "SUCCESS") {
+            QMessageBox::critical(this, "Ошибка импорта", 
+                "Не удалось прочитать Excel файл. Убедитесь, что он не открыт в другой программе.\n\n" + output);
+            return;
+        }
+        actualFileToParse = tempCsv;
+    }
+
+    QFile file(actualFileToParse);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::critical(this, "Ошибка", "Не удалось открыть файл: " + filename);
+        QMessageBox::critical(this, "Ошибка", "Не удалось открыть файл: " + actualFileToParse);
         return;
     }
 
@@ -321,7 +346,6 @@ void DatabaseWidget::onImportFromExcel()
         if (line.isEmpty()) continue;
 
         QStringList values = line.split(";");
-
         for (int i = 0; i < values.size(); ++i) {
             values[i] = values[i].remove(QRegularExpression("^\"|\"$")).trimmed();
         }
@@ -343,14 +367,11 @@ void DatabaseWidget::onImportFromExcel()
         return;
     }
 
-    // Создаем таблицу в БД
     if (!dbManager->createTable(tableName, columns)) {
-        QMessageBox::critical(this, "Ошибка", 
-            "Не удалось создать таблицу '" + tableName + "'. Возможно, имя уже занято.");
+        QMessageBox::critical(this, "Ошибка", "Не удалось создать таблицу '" + tableName + "'. Возможно, имя уже занято.");
         return;
     }
 
-    //Вставляем данные 
     int successCount = 0;
     for (const auto &row : rows) {
         if (dbManager->insertRow(tableName, row)) {
@@ -358,14 +379,15 @@ void DatabaseWidget::onImportFromExcel()
         }
     }
 
-    // Результат
     QMessageBox::information(this, "Импорт завершён",
-    QString("Импортировано %1 строк в таблицу '%2'")
-        .arg(successCount)
-        .arg(tableName));
+        QString("Импортировано %1 строк в таблицу '%2'").arg(successCount).arg(tableName));
 
     loadTablesList();
     onTableSelected(tableName);
+    
+    if (actualFileToParse != filename) {
+        QFile::remove(actualFileToParse);
+    }
 }
 
 void DatabaseWidget::onShowOnBoard()

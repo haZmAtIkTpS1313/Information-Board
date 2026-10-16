@@ -18,8 +18,12 @@
 #include <QVBoxLayout>
 #include <QSettings>
 #include <QDir>
+#include <QStringList>
 #include <QUrl>
 #include <QMediaPlayer>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -32,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     , slideshowManager(nullptr)
     , weatherManager(nullptr)
     , weatherUpdateTimer(nullptr)
-    , newsUpdateTimer(nullptr)
+    //, newsUpdateTimer(nullptr)
     , countdownTimer(nullptr)
     , weatherWarningPlayer(nullptr)
     , weatherWarningActive(false)
@@ -41,6 +45,10 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Консоль управления информационной доской");
 
     designerWidget = new BoardDesignerWidget(this);
+    QSettings settings(QDir::homePath() + "/.InformationBoard/settings.ini", QSettings::IniFormat);
+    int boardW = settings.value("designer/boardWidth", 800).toInt();
+    int boardH = settings.value("designer/boardHeight", 640).toInt();
+    designerWidget->setBoardResolution(boardW, boardH);
     if (ui->tabWidget) {
         for (int i = 0; i < ui->tabWidget->count(); ++i) {
             if (ui->tabWidget->tabText(i) == "Дизайн") {
@@ -133,7 +141,7 @@ MainWindow::MainWindow(QWidget *parent)
     applyWeatherSettings();
 
 
-    QPushButton *restoreBoardBtn = new QPushButton("↩ Вернуть доску", this);
+    QPushButton *restoreBoardBtn = new QPushButton(" Вернуть доску", this);
     restoreBoardBtn->setMinimumHeight(40);
     restoreBoardBtn->setStyleSheet(
         "QPushButton {"
@@ -150,8 +158,75 @@ MainWindow::MainWindow(QWidget *parent)
     );
 
     // Добавляем в группу "Управление окнами", рядом с кнопкой настроек
-    if (ui->windowGroupLayout) {
-        ui->windowGroupLayout->addWidget(restoreBoardBtn, 2, 1);
+        // === Вставляем "Вернуть доску" СПРАВА от кнопки времени ===
+    bool placed = false;
+
+    if (ui->quickTimeButton) {
+        QWidget *host = ui->quickTimeButton->parentWidget();
+        QLayout *lay = host ? host->layout() : nullptr;
+
+        // Случай 1: кнопка времени лежит в горизонтальном/layout-е
+        if (QHBoxLayout *box = qobject_cast<QHBoxLayout*>(lay)) {
+            for (int i = 0; i < box->count(); ++i) {
+                QLayoutItem *item = box->itemAt(i);
+                if (item && item->widget() == ui->quickTimeButton) {
+                    box->insertWidget(i + 1, restoreBoardBtn);
+                    placed = true;
+                    break;
+                }
+            }
+        }
+
+        // Случай 2: кнопка времени лежит в сетке (QGridLayout)
+        if (!placed) {
+            if (QGridLayout *grid = qobject_cast<QGridLayout*>(lay)) {
+                int timeRow = -1, timeCol = -1, rowSpan = 1, colSpan = 1;
+
+                for (int i = 0; i < grid->count(); ++i) {
+                    QLayoutItem *item = grid->itemAt(i);
+                    if (item && item->widget() == ui->quickTimeButton) {
+                        grid->getItemPosition(i, &timeRow, &timeCol, &rowSpan, &colSpan);
+                        break;
+                    }
+                }
+
+                if (timeRow >= 0) {
+                    // Ищем первую свободную колонку справа от кнопки времени
+                    int targetCol = timeCol + colSpan;
+
+                    while (true) {
+                        bool occupied = false;
+                        for (int i = 0; i < grid->count(); ++i) {
+                            QLayoutItem *item = grid->itemAt(i);
+                            if (!item) continue;
+
+                            int r, c, rs, cs;
+                            grid->getItemPosition(i, &r, &c, &rs, &cs);
+
+                            // Занята ли целевая колонка в этой строке?
+                            if (r == timeRow && c <= targetCol && c + cs > targetCol) {
+                                occupied = true;
+                                break;
+                            }
+                        }
+
+                        if (!occupied) break;
+                        ++targetCol;
+                    }
+
+                    grid->addWidget(restoreBoardBtn, timeRow, targetCol);
+                    placed = true;
+                }
+            }
+        }
+    }
+
+    // Страховка: если не нашли кнопку времени — не теряем кнопку
+    if (!placed) {
+        if (ui->windowGroupLayout) {
+            ui->windowGroupLayout->addWidget(restoreBoardBtn, 2, 1);
+        }
+        qDebug() << "Не найдена quickTimeButton — кнопка добавлена в окно управления";
     }
 
     connect(restoreBoardBtn, &QPushButton::clicked,
@@ -204,12 +279,12 @@ void MainWindow::setupConnections()
         connect(ui->applyFontStyleButton, &QPushButton::clicked, this, &MainWindow::updateBoardStyle);
 
     // --- Быстрые команды ---
-    if (ui->quickWeatherButton)
-        connect(ui->quickWeatherButton, &QPushButton::clicked, this, &MainWindow::handleQuickWeatherButtonClicked);
-    if (ui->quickTimeButton)
-        connect(ui->quickTimeButton, &QPushButton::clicked, this, &MainWindow::handleQuickTimeButtonClicked);
-    if (ui->quickLogoButton)
-        connect(ui->quickLogoButton, &QPushButton::clicked, this, &MainWindow::handleQuickLogoButtonClicked);
+    // if (ui->quickWeatherButton)
+    //     connect(ui->quickWeatherButton, &QPushButton::clicked, this, &MainWindow::handleQuickWeatherButtonClicked);
+    // if (ui->quickTimeButton)
+    //     connect(ui->quickTimeButton, &QPushButton::clicked, this, &MainWindow::handleQuickTimeButtonClicked);
+    // if (ui->quickLogoButton)
+    //     connect(ui->quickLogoButton, &QPushButton::clicked, this, &MainWindow::handleQuickLogoButtonClicked);
 
     // --- Цвет фона ---
     if (ui->setRedBackgroundButton)
@@ -346,41 +421,41 @@ void MainWindow::handleClearBoardButtonClicked()
     }
 }
 
-void MainWindow::handleQuickWeatherButtonClicked()
-{
-    if (!boardWindow) return;
+// void MainWindow::handleQuickWeatherButtonClicked()
+// {
+//     if (!boardWindow) return;
 
-    if (lastWeatherData.isValid) {
-        QString detailedWeather = QString(
-                                      "🌡️ ПОГОДА В %1\n\n"
-                                      "🌡️ Температура: %2°C\n"
-                                      "🤔 Ощущается как: %3°C\n"
-                                      "💧 Влажность: %4%%\n"
-                                      "🌬️ Ветер: %5 м/с\n"
-                                      "📝 Описание: %6\n"
-                                      "🔄 Обновлено: %7"
-                                      ).arg(lastWeatherData.cityName)
-                                      .arg(qRound(lastWeatherData.temperature))
-                                      .arg(qRound(lastWeatherData.feelsLike))
-                                      .arg(lastWeatherData.humidity)
-                                      .arg(lastWeatherData.windSpeed)
-                                      .arg(lastWeatherData.description)
-                                      .arg(QTime::currentTime().toString("hh:mm:ss"));
+//     if (lastWeatherData.isValid) {
+//         QString detailedWeather = QString(
+//                                       "ПОГОДА В %1\n\n"
+//                                       "Температура: %2°C\n"
+//                                       "Ощущается как: %3°C\n"
+//                                       "Влажность: %4%%\n"
+//                                       "Ветер: %5 м/с\n"
+//                                       "Описание: %6\n"
+//                                       "Обновлено: %7"
+//                                       ).arg(lastWeatherData.cityName)
+//                                       .arg(qRound(lastWeatherData.temperature))
+//                                       .arg(qRound(lastWeatherData.feelsLike))
+//                                       .arg(lastWeatherData.humidity)
+//                                       .arg(lastWeatherData.windSpeed)
+//                                       .arg(lastWeatherData.description)
+//                                       .arg(QTime::currentTime().toString("hh:mm:ss"));
 
-        boardWindow->showPermanentText(detailedWeather);
-        statusBar()->showMessage("Показана подробная погода", 2000);
-    } else {
-        boardWindow->showPermanentText("🌡️ ПОГОДА\n\nДанные загружаются...\nПожалуйста, подождите.");
-        statusBar()->showMessage("Погода ещё не загружена", 2000);
-    }
-}
+//         boardWindow->showPermanentText(detailedWeather);
+//         statusBar()->showMessage("Показана подробная погода", 2000);
+//     } else {
+//         boardWindow->showPermanentText("ПОГОДА\n\nДанные загружаются...\nПожалуйста, подождите.");
+//         statusBar()->showMessage("Погода ещё не загружена", 2000);
+//     }
+// }
 
 void MainWindow::handleQuickTimeButtonClicked()
 {
     if (!boardWindow) return;
     QTime time = QTime::currentTime();
     QDate date = QDate::currentDate();
-    QString timeString = QString("🕐 ТЕКУЩЕЕ ВРЕМЯ\n\nДата: %1\nВремя: %2\nДень недели: %3")
+    QString timeString = QString("ТЕКУЩЕЕ ВРЕМЯ\n\nДата: %1\nВремя: %2\nДень недели: %3")
                              .arg(date.toString("dd.MM.yyyy"))
                              .arg(time.toString("hh:mm:ss"))
                              .arg(date.toString("dddd"));
@@ -388,17 +463,17 @@ void MainWindow::handleQuickTimeButtonClicked()
     statusBar()->showMessage("Показано текущее время");
 }
 
-void MainWindow::handleQuickLogoButtonClicked()
-{
-    if (!boardWindow) return;
-    boardWindow->showPermanentText(
-        "🏢 НАША КОМПАНИЯ\n\n"
-        "Информационные технологии\n"
-        "Основано в 2024 году\n"
-        "Мы создаем будущее"
-        );
-    statusBar()->showMessage("Показан логотип");
-}
+// void MainWindow::handleQuickLogoButtonClicked()
+// {
+//     if (!boardWindow) return;
+//     boardWindow->showPermanentText(
+//         "НАША КОМПАНИЯ\n\n"
+//         "Информационные технологии\n"
+//         "Основано в 2024 году\n"
+//         "Мы создаем будущее"
+//         );
+//     statusBar()->showMessage("Показан логотип");
+// }
 
 void MainWindow::handleSetRedBackgroundButtonClicked()
 {
@@ -593,9 +668,14 @@ void MainWindow::handleResetDesignButtonClicked()
 void MainWindow::handleSaveDesignButtonClicked()
 {
     if (!designerWidget) return;
-    QString fileName = QFileDialog::getSaveFileName(this,
-                                                    "Сохранить дизайн доски", "design_",
-                                                    "Design files (*.design)");
+
+    QSettings settings(QDir::homePath() + "/.InformationBoard/settings.ini", QSettings::IniFormat);
+    settings.setValue("designer/boardWidth", designerWidget->getBoardWidth());
+    settings.setValue("designer/boardHeight", designerWidget->getBoardHeight());
+    settings.sync();
+
+    QString fileName = QFileDialog::getSaveFileName(this, "Сохранить дизайн доски", "design_", "Design files (*.design)");
+
     if (fileName.isEmpty()) return;
     if (!fileName.endsWith(".design")) fileName += ".design";
 
@@ -884,8 +964,11 @@ void MainWindow::applySlideshowSettings()
     QString folderPath = settings.value("slideshow/folderPath").toString();
     int intervalSeconds = settings.value("slideshow/intervalSeconds", 10).toInt();
 
+    QStringList selectedFiles = settings.value("slideshow/selectedFiles").toStringList();
+
     slideshowManager->setFolderPath(folderPath);
     slideshowManager->setIntervalSeconds(intervalSeconds);
+    slideshowManager->setSelectedFiles(selectedFiles);
     slideshowManager->setEnabled(enabled);
 }
 

@@ -38,9 +38,9 @@ private slots:
     void handleClearBoardButtonClicked();
 
     //void on_quickNewsButton_clicked();
-    void handleQuickWeatherButtonClicked();
+    //void handleQuickWeatherButtonClicked();
     void handleQuickTimeButtonClicked();
-    void handleQuickLogoButtonClicked();
+    //void handleQuickLogoButtonClicked();
 
     void handleSetRedBackgroundButtonClicked();
     void handleSetBlueBackgroundButtonClicked();
@@ -110,7 +110,7 @@ private:
 
     WeatherManager *weatherManager;
     QTimer *weatherUpdateTimer;
-    QTimer *newsUpdateTimer;
+    //QTimer *newsUpdateTimer;
     QTimer *countdownTimer;
     QMediaPlayer *weatherWarningPlayer;
     bool weatherWarningActive;

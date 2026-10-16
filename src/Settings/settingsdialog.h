@@ -2,6 +2,9 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <qlist.h>
+#include <QListWidget>
+#include <qpushbutton.h>
 
 class QLineEdit;
 class QSpinBox;
@@ -19,6 +22,8 @@ private slots:
     void onBrowseEmergencySound();
     void onBrowseWeatherWarningSound();
     void onBrowseSlideshowFolder();
+    void onAddSlideshowFiles();
+    void onRemoveSlideshowFiles();
 
 private:
     void setupUI();
@@ -33,6 +38,9 @@ private:
     QCheckBox *slideshowEnabledCheck;
     QLineEdit *slideshowFolderEdit;
     QSpinBox *slideshowIntervalSpin;
+    QListWidget *selectedFilesList;
+    QPushButton *addFilesButton;
+    QPushButton *removeFilesButton;
 };
 
 #endif // SETTINGSDIALOG_H
