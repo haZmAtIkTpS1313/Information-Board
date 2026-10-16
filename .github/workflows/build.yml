@@ -1,22 +1,24 @@
-name: Build Qt Application
+name: Build and Release
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
-    build-linux:
+  build-linux:
     name: Build Release on Linux
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Install Qt6
+      - name: Install Qt5
         run: |
           sudo apt-get update
-          sudo apt-get install -y qt6-base-dev qt6-multimedia-dev libqt6sql6-sqlite cmake g++ git
+          sudo apt-get install -y qtbase5-dev qtmultimedia5-dev libqt5sql5-sqlite cmake g++
 
       - name: Configure (Release)
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -30,20 +32,21 @@ jobs:
           name: InformationBoard-Linux
           path: build/InformationBoard
           retention-days: 14
-      build-windows:
+
+  build-windows:
     name: Build Release on Windows
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Install Qt6 via aqt
+      - name: Install Qt via aqt
         run: |
           pip install aqtinstall
-          python -m aqt install-qt windows desktop 6.5.3 win64_msvc2019_64 --outputdir D:\Qt
+          python -m aqt install-qt windows desktop 5.15.2 win64_msvc2019_64 --outputdir D:\Qt
 
       - name: Configure
-        run: cmake -B build -DCMAKE_PREFIX_PATH=D:\Qt\6.5.3\msvc2019_64 -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -DCMAKE_PREFIX_PATH=D:\Qt\5.15.2\msvc2019_64 -DCMAKE_BUILD_TYPE=Release
 
       - name: Build (Release)
         run: cmake --build build --config Release
@@ -62,7 +65,7 @@ jobs:
 
       - name: Deploy Qt libraries
         shell: cmd
-        run: D:\Qt\6.5.3\msvc2019_64\bin\windeployqt.exe --release --no-translations dist\InformationBoard.exe
+        run: D:\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe --release --no-translations dist\InformationBoard.exe
 
       - name: Create Single EXE (7z SFX)
         shell: cmd
@@ -86,4 +89,3 @@ jobs:
           name: InformationBoard-Windows-Single
           path: dist/InformationBoard_Single.exe
           retention-days: 14
-
