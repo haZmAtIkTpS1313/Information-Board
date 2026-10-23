@@ -84,9 +84,9 @@ void ScheduleEntryDialog::setupUI()
     designLayout->addWidget(browseDesignButton);
     mainLayout->addLayout(designLayout);
 
-    enabledCheck = new QCheckBox("Активно", this);
-    enabledCheck->setChecked(true);
-    mainLayout->addWidget(enabledCheck);
+    //enabledCheck = new QCheckBox("Активно", this);
+    //enabledCheck->setChecked(true);
+    //mainLayout->addWidget(enabledCheck);
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
@@ -141,7 +141,7 @@ void ScheduleEntryDialog::setEntry(const ScheduleEntry &entry)
     designPathEdit->setText(entry.designPath);
     messageEdit->setPlainText(entry.message);
     volumeSlider->setValue(entry.volume);
-    enabledCheck->setChecked(entry.enabled);
+    //enabledCheck->setChecked(entry.enabled);
 }
 
 ScheduleEntry ScheduleEntryDialog::entry() const
@@ -156,6 +156,7 @@ ScheduleEntry ScheduleEntryDialog::entry() const
     entry.designPath = designPathEdit->text();
     entry.message = messageEdit->toPlainText();
     entry.volume = volumeSlider->value();
-    entry.enabled = enabledCheck->isChecked();
+    //entry.enabled = enabledCheck->isChecked();
+    entry.enabled = true;
     return entry;
 }

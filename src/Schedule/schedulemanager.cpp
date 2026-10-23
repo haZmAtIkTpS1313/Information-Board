@@ -189,6 +189,18 @@ void ScheduleManager::fireEntry(const ScheduleEntry &entry)
     }
 }
 
+void ScheduleManager::setEntryEnabled(const QString &id, bool enabled)
+{
+    for (int i = 0; i < m_entries.size(); ++i) {
+        if (m_entries[i].id == id) {
+            m_entries[i].enabled = enabled;
+            save(); 
+            emit entriesChanged();
+            return;
+        }
+    }
+}
+
 void ScheduleManager::playSound(const QString &path, int volume)
 {
     if (path.isEmpty() || !QFile::exists(path)) {

@@ -35,7 +35,7 @@ private:
     QLineEdit *designPathEdit;
     QPlainTextEdit *messageEdit;
     QSlider *volumeSlider;
-    QCheckBox *enabledCheck;
+    //QCheckBox *enabledCheck;
 
     QString m_id;
 };

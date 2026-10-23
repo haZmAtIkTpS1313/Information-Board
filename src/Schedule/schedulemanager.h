@@ -41,6 +41,7 @@ public:
 
     bool globalEnabled() const { return m_globalEnabled; }
     void setGlobalEnabled(bool enabled);
+    void setEntryEnabled(const QString &id, bool enabled);
 
     bool quietHoursEnabled() const { return m_quietHoursEnabled; }
     QTime quietHoursStart() const { return m_quietHoursStart; }

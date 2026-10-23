@@ -14,6 +14,8 @@
 #include <QStringList>
 #include <QTableWidgetItem>
 #include <QMessageBox>
+#include <qboxlayout.h>
+#include <qcheckbox.h>
 #include <qdatetime.h>
 #include <qfileinfo.h>
 #include <qfont.h>
@@ -21,6 +23,7 @@
 #include <qtablewidget.h>
 #include <algorithm>
 #include <QDebug>
+#include <qwidget.h>
 
 static const char *kDayShort[7] = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
 
@@ -147,7 +150,29 @@ void ScheduleWidget::refreshTable()
         QTableWidgetItem *soundItem = new QTableWidgetItem(entry.soundPath.isEmpty() ? "-" : QFileInfo(entry.soundPath).fileName());
         QTableWidgetItem *designItem = new QTableWidgetItem((entry.designPath.isEmpty() ? "—" : QFileInfo(entry.designPath).fileName()));
         QTableWidgetItem *messageItem = new QTableWidgetItem(entry.message);
-        QTableWidgetItem *enabledItem = new QTableWidgetItem(entry.enabled ? "Да" : "Нет");
+        //QTableWidgetItem *enabledItem = new QTableWidgetItem(entry.enabled ? "Да" : "Нет");
+
+        QCheckBox *activeCheck = new QCheckBox();
+        activeCheck->setChecked(entry.enabled);
+        activeCheck->setStyleSheet("QCheckBox { margin-left^ 50%; margin-right^ 50%; }");
+
+        activeCheck->setProperty("entryId", entry.id);
+
+        connect(activeCheck, &QCheckBox::toggled, this, [this](bool checked) {
+            QCheckBox *cb = qobject_cast<QCheckBox*>(sender());
+            if (cb) {
+                QString id = cb->property("entryId").toString();
+                m_manager->setEntryEnabled(id, checked);
+            }
+        });
+
+        QWidget *checkWidget = new QWidget();
+        QHBoxLayout *checkLayout = new QHBoxLayout(checkWidget);
+        checkLayout->addWidget(activeCheck);
+        checkLayout->setAlignment(Qt::AlignCenter);
+        checkLayout->setContentsMargins(0,0,0,0);
+
+
 
         QString entryId = entry.id;
         nameItem->setData(Qt::UserRole, entryId);
@@ -156,7 +181,7 @@ void ScheduleWidget::refreshTable()
         soundItem->setData(Qt::UserRole, entryId);
         designItem->setData(Qt::UserRole, entryId);
         messageItem->setData(Qt::UserRole, entryId);
-        enabledItem->setData(Qt::UserRole, entryId);
+        //enabledItem->setData(Qt::UserRole, entryId);
 
         m_table->setItem(row,0,nameItem);
         m_table->setItem(row,1,timeItem);
@@ -164,7 +189,9 @@ void ScheduleWidget::refreshTable()
         m_table->setItem(row,3,soundItem);
         m_table->setItem(row,4,designItem);
         m_table->setItem(row,5,messageItem);
-        m_table->setItem(row,6,enabledItem);
+        //m_table->setItem(row,6,enabledItem);
+
+        m_table->setCellWidget(row, 6, checkWidget);
        }
 }
 
