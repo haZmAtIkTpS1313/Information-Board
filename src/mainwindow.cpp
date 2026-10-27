@@ -46,8 +46,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     designerWidget = new BoardDesignerWidget(this);
     QSettings settings(QDir::homePath() + "/.InformationBoard/settings.ini", QSettings::IniFormat);
+    settings.beginGroup("CustomResolution");
+    int customW = settings.value("width", 0).toInt();
+    int customH = settings.value("height", 0).toInt();
+    settings.endGroup();
+
     int boardW = settings.value("designer/boardWidth", 800).toInt();
     int boardH = settings.value("designer/boardHeight", 640).toInt();
+
+    if (customW > 0 && customH > 0 && boardW == customW && boardH == customH) {
+        designerWidget->setBoardResolution(customW, customH);
+    } else {
+        designerWidget->setBoardResolution(boardW, boardH);
+    }
     designerWidget->setBoardResolution(boardW, boardH);
     if (ui->tabWidget) {
         for (int i = 0; i < ui->tabWidget->count(); ++i) {
@@ -814,11 +825,11 @@ QString MainWindow::getWeatherEmoji(const QString &description)
 {
     if (description.contains("ясно", Qt::CaseInsensitive)) return "☀️";
     if (description.contains("облачно", Qt::CaseInsensitive)) return "☁️";
-    if (description.contains("дождь", Qt::CaseInsensitive)) return "🌧️";
+    if (description.contains("дождь", Qt::CaseInsensitive)) return "";
     if (description.contains("снег", Qt::CaseInsensitive)) return "❄️";
-    if (description.contains("гроза", Qt::CaseInsensitive)) return "⛈️";
-    if (description.contains("туман", Qt::CaseInsensitive)) return "🌫️";
-    return "🌡️";
+    if (description.contains("гроза", Qt::CaseInsensitive)) return "";
+    if (description.contains("туман", Qt::CaseInsensitive)) return "";
+    return "";
 }
 
 void MainWindow::onShowTable(const QString &tableName, const QString &tableData)

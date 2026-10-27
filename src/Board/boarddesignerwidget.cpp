@@ -1,6 +1,8 @@
 #include "boarddesignerwidget.h"
 #include "elementpropertiesdialog.h"
-#include <QVBoxLayout>
+#include <QSettings>
+#include <QDir>
+#include <QMessageBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QDragEnterEvent>
@@ -11,6 +13,8 @@
 #include <QInputDialog>
 #include <QScrollArea>
 #include <qglobal.h>
+#include <qmessagebox.h>
+#include <qnamespace.h>
 #include <qpaintdevice.h>
 
 BoardDesignerWidget::BoardDesignerWidget(QWidget *parent)
@@ -38,7 +42,7 @@ void BoardDesignerWidget::setupUI()
     mainLayout->setContentsMargins(10, 10, 10, 10);
 
     QLabel *titleLabel = new QLabel(
-        "🎨 Редактор макета доски — перетащить: переместить · уголок: изменить размер · "
+        "Редактор макета доски — перетащить: переместить · уголок: изменить размер · "
         "ПКМ: свойства · двойной клик: удалить", this);
     titleLabel->setStyleSheet(
         "QLabel { font-size: 16px; font-weight: bold; color: #2c3e50; padding: 10px; "
@@ -60,6 +64,13 @@ void BoardDesignerWidget::setupUI()
         "Пользовательское..."
     });
     resolutionCombo->setCurrentIndex(0);
+    QSettings settings(QDir::homePath() + "/.InformationBoard/settings.ini", QSettings::IniFormat);
+    settings.beginGroup("CustoResolution");
+    QString lastCustomName = settings.value("name", "Пользовательское...").toString();
+    if (!lastCustomName.isEmpty() && lastCustomName != "Пользовательское...") {
+        resolutionCombo->setItemText(resolutionCombo->count() - 1, lastCustomName);
+    }
+    settings.endGroup();
     
     applyResolutionBtn = new QPushButton("🔄 Применить размер", this);
     applyResolutionBtn->setStyleSheet(
@@ -142,15 +153,15 @@ void BoardDesignerWidget::createElementPalette()
     };
 
     QList<ElementInfo> elementsList = {
-        {"logo", "Логотип", "🏢 Логотип", 120, 80},
+        {"logo", "Логотип", "Логотип", 120, 80},
         {"clock", "Часы", "12:00:00", 120, 80},
         {"date", "Дата", "01.01.2024", 120, 80},
         {"slideshow", "Слайдшоу", "🖼️ Слайдшоу", 440, 120},
         {"content", "Контент", "Текст", 200, 100},
         {"weather", "Погода", "☀️ +22°C", 120, 80},
-        {"wind", "Ветер", "3 м/с С", 120, 80},
-        {"humidity", "Влажность", "45%", 100, 70},
-        {"pressure", "Давление", "1013 гПа", 100, 70},
+        {"wind", "Ветер", "Скорость ветра 3 м/с С", 120, 80},
+        {"humidity", "Влажность", "45% влажности", 100, 70},
+        {"pressure", "Давление", "Давление 1013 гПа", 100, 70},
         {"countdown", "Обратный отсчёт", "До события: --:--:--", 240, 70},
         {"announcement", "Объявление", "Объявлений пока нет", 480, 70},
         //{"ticker", "Бегущая строка", "Новости...", 400, 60}
@@ -668,22 +679,51 @@ void BoardDesignerWidget::onApplyResolution()
     else if (text.contains("1920")) { newW = 1920; newH = 1080; }
     else if (text.contains("2560")) { newW = 2560; newH = 1440; }
     else if (text.contains("3840")) { newW = 3840; newH = 2160; }
-    else {
-        bool ok;
-        QString custom = QInputDialog::getText(this, "Пользовательское разрешение", 
-            "Введите ширину и высоту через 'x' (например, 1920x1080):", 
-            QLineEdit::Normal, "1920x1080", &ok);
-        if (!ok) return;
-        QStringList parts = custom.split('x', Qt::SkipEmptyParts);
+    else if (text.contains("Пользовательское")) {
+        bool okName;
+        QString customName = QInputDialog::getText(this, "Название пресета",
+            "Введите название для этого разрешения (или оставьте пустым):",
+            QLineEdit::Normal, "", &okName);
+        if (!okName) return;
+        
+        bool okWH;
+        QString wh = QInputDialog::getText(this, "Разрешение",
+            "Введите ширину и высоту через 'x' (например, 1920х1080):",
+            QLineEdit::Normal, QString("%1x%2").arg(currentBoardWidth).arg(currentBoardHeight),&okWH);
+        if (!okWH) return;
+
+        QStringList parts = wh.split('x', Qt::SkipEmptyParts);
         if (parts.size() == 2) {
             newW = parts[0].toInt();
             newH = parts[1].toInt();
+        } else {
+            QMessageBox::warning(this, "Ошибка формата", "Введите размеры в формате ШxВ (например, 1920x1080)");
+            return;
         }
+
+        if (newW <= 0 || newH <= 0) {
+            QMessageBox::warning(this, "Ошибка", "Разрешение должно быть больше 0");
+            return;
+        }
+
+        if (customName.trimmed().isEmpty()) {
+            customName = QString("Пользовательское (%1х%2)").arg(newW).arg(newH);
+        }
+
+        QSettings settings(QDir::homePath() + "/.InformationBoard/settings.ini", QSettings::IniFormat);
+        settings.beginGroup("CustomResolution");
+        settings.setValue("name", customName);
+        settings.setValue("width", newW);
+        settings.setValue("height", newH);
+        settings.endGroup();
+
+        resolutionCombo->setItemText(resolutionCombo->currentIndex(), customName);
     }
 
     if (newW > 0 && newH > 0) {
         setBoardResolution(newW, newH);
     }
+
 }
 
 void BoardDesignerWidget::setBoardResolution(int width, int height)
