@@ -142,60 +142,52 @@ void BoardDesignerWidget::setupUI()
 
 void BoardDesignerWidget::createElementPalette()
 {
+    QSettings settings(QDir::homePath() + "/.InformationBoard/settings.ini", QSettings::IniFormat);
+    bool hideTicker = settings.value("designer/hideTicker", false).toBool();
+    bool hideLogo = settings.value("designer/hideLogo", false).toBool();
+
     struct ElementInfo {
-        QString type;
-        QString name;
-        QString defaultText;
-        int defaultWidth;
-        int defaultHeight;
+        QString type, name, defaultText;
+        int defaultWidth, defaultHeight;
         ElementInfo(QString t, QString n, QString txt, int w, int h)
             : type(t), name(n), defaultText(txt), defaultWidth(w), defaultHeight(h) {}
     };
 
     QList<ElementInfo> elementsList = {
-        {"logo", "Логотип", "Логотип", 120, 80},
-        {"clock", "Часы", "12:00:00", 120, 80},
+        {"clock", "Часы", "00:00:00", 120, 80},
         {"date", "Дата", "01.01.2024", 120, 80},
-        {"slideshow", "Слайдшоу", "🖼️ Слайдшоу", 440, 120},
+        {"slideshow", "Слайдшоу", "Слайдшоу", 440, 120},
         {"content", "Контент", "Текст", 200, 100},
-        {"weather", "Погода", "☀️ +22°C", 120, 80},
-        {"wind", "Ветер", "Скорость ветра 3 м/с С", 120, 80},
-        {"humidity", "Влажность", "45% влажности", 100, 70},
-        {"pressure", "Давление", "Давление 1013 гПа", 100, 70},
-        {"countdown", "Обратный отсчёт", "До события: --:--:--", 240, 70},
-        {"announcement", "Объявление", "Объявлений пока нет", 480, 70},
-        //{"ticker", "Бегущая строка", "Новости...", 400, 60}
+        {"weather", "Погода", "Погода", 120, 80},
+        {"wind", "Ветер", "Ветер", 120, 80},
+        {"humidity", "Влажность", "Влажность", 100, 70},
+        {"pressure", "Давление", "Давление", 100, 70},
+        {"countdown", "Обратный отсчёт", "00:00:00", 240, 70},
+        {"announcement", "Объявление", "Текст объявления", 480, 70}
     };
 
+    if (!hideLogo) {
+        elementsList.prepend({"logo", "Логотип", "Логотип", 120, 80});
+    }
+    if (!hideTicker) {
+        elementsList.append({"ticker", "Бегущая строка", "", 400, 60});
+    }
+
     for (const auto &elem : elementsList) {
-        DraggableElement *element = new DraggableElement(
-            elem.type, elem.name, elem.defaultText, paletteWidget
-        );
-        element->setFixedHeight(45);       // высота одной строки
-        element->setMinimumWidth(150);     // ширина под панель
+        DraggableElement *element = new DraggableElement(elem.type, elem.name, elem.defaultText, paletteWidget);
+        element->setFixedHeight(45);
+        element->setMinimumWidth(150);
         element->setText(elem.name);
         element->setStyleSheet(
-            "DraggableElement {"
-            "   background-color: #27ae60;"
-            "   color: white;"
-            "   border: 2px solid #229954;"
-            "   border-radius: 5px;"
-            "   font-size: 13px;"
-            "   font-weight: bold;"
-            "   padding: 5px;"
-            "}"
-            "DraggableElement:hover {"
-            "   background-color: #229954;"
-            "   border: 2px solid #1e8449;"
-            "}"
+            "DraggableElement { background-color: #27ae60; color: white; border: 2px solid #229954; "
+            "border-radius: 5px; font-size: 13px; font-weight: bold; padding: 5px; }"
+            "DraggableElement:hover { background-color: #229954; border: 2px solid #1e8449; }"
         );
         element->setPlaced(false);
         elements[elem.type] = element;
-
-        paletteLayout->addWidget(element);   // по одному в строку
+        paletteLayout->addWidget(element);
     }
-
-    // Растягивающий spacer внизу, чтобы элементы были прижаты к верху
+    
     paletteLayout->addStretch();
 }
 
@@ -751,4 +743,16 @@ void BoardDesignerWidget::setBoardResolution(int width, int height)
     designerArea->setFixedSize(width, height);
     
     emit layoutChanged();
+}
+void BoardDesignerWidget::refreshPalette()
+{
+    QLayoutItem *child;
+    while ((child = paletteLayout->takeAt(0)) != nullptr) {
+        if (child->widget()) {
+            child->widget()->deleteLater();
+        }
+        delete child;
+    }
+    elements.clear();
+    createElementPalette();
 }

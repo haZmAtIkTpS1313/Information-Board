@@ -1,4 +1,5 @@
 #include "announcemententrydialog.h"
+#include <QColorDialog>
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <QHBoxLayout>
@@ -10,6 +11,8 @@
 #include <QLabel>
 #include <QGroupBox>
 #include <QDialogButtonBox>
+#include <qformlayout.h>
+#include <qgroupbox.h>
 
 static const char *kDayShort[7] = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
 
@@ -92,6 +95,35 @@ void AnnouncementEntryDialog::setupUI()
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     mainLayout->addWidget(buttons);
+
+    QGroupBox *styleGroup = new QGroupBox("Оформление текста", this);
+    QFormLayout *styleLayout = new QFormLayout(styleGroup);
+
+    fontCombo = new QFontComboBox(this);
+    fontCombo->setCurrentFont(QFont("Arial"));
+    styleLayout->addRow("Шрифт:", fontCombo);
+
+    fontSizeSpin = new QSpinBox(this);
+    fontSizeSpin->setRange(12, 120);
+    fontSizeSpin->setValue(24);
+    styleLayout->addRow("Размер:", fontSizeSpin);
+
+    QHBoxLayout *colorLayout = new QHBoxLayout();
+    
+    m_textColor = QColor("#FFFFFF");
+    textColorBtn = new QPushButton("Цвет текста", this);
+    textColorBtn->setStyleSheet(QString("background-color: %1; color: black; border: 1px solid #ccc; border-radius: 4px;").arg(m_textColor.name()));
+    connect(textColorBtn, &QPushButton::clicked, this, &AnnouncementEntryDialog::onPickTextColor);
+    colorLayout->addWidget(textColorBtn);
+
+    m_bgColor = QColor(0, 0, 0, 180); 
+    bgColorBtn = new QPushButton("Цвет фона", this);
+    bgColorBtn->setStyleSheet(QString("background-color: %1; color: white; border: 1px solid #ccc; border-radius: 4px;").arg(m_bgColor.name()));
+    connect(bgColorBtn, &QPushButton::clicked, this, &AnnouncementEntryDialog::onPickBgColor);
+    colorLayout->addWidget(bgColorBtn);
+
+    styleLayout->addRow("Цвета:", colorLayout);
+    mainLayout->addWidget(styleGroup);
 }
 
 void AnnouncementEntryDialog::updateScheduleVisibility()
@@ -121,6 +153,14 @@ void AnnouncementEntryDialog::setAnnouncement(const Announcement &announcement)
     }
     
     updateScheduleVisibility();
+
+    fontCombo->setCurrentFont(QFont(announcement.fontName));
+    fontSizeSpin->setValue(announcement.fontSize);
+    m_textColor = QColor(announcement.textColor);
+    m_bgColor = QColor(announcement.bgColor);
+    
+    textColorBtn->setStyleSheet(QString("background-color: %1; color: black; border: 1px solid #ccc; border-radius: 4px;").arg(m_textColor.name()));
+    bgColorBtn->setStyleSheet(QString("background-color: %1; color: white; border: 1px solid #ccc; border-radius: 4px;").arg(m_bgColor.name()));
 }
 
 Announcement AnnouncementEntryDialog::announcement() const
@@ -143,5 +183,27 @@ Announcement AnnouncementEntryDialog::announcement() const
         }
     }
     
+    a.fontName = fontCombo->currentFont().family();
+    a.fontSize = fontSizeSpin->value();
+    a.textColor = m_textColor.name();
+    a.bgColor = m_bgColor.name(); 
+
     return a;
+}
+void AnnouncementEntryDialog::onPickTextColor()
+{
+    QColor color = QColorDialog::getColor(m_textColor, this, "Выберите цвет текста");
+    if (color.isValid()) {
+        m_textColor = color;
+        textColorBtn->setStyleSheet(QString("background-color: %1; color: black; border: 1px solid #ccc; border-radius: 4px;").arg(m_textColor.name()));
+    }
+}
+
+void AnnouncementEntryDialog::onPickBgColor()
+{
+    QColor color = QColorDialog::getColor(m_bgColor, this, "Выберите цвет фона");
+    if (color.isValid()) {
+        m_bgColor = color;
+        bgColorBtn->setStyleSheet(QString("background-color: %1; color: white; border: 1px solid #ccc; border-radius: 4px;").arg(m_bgColor.name()));
+    }
 }

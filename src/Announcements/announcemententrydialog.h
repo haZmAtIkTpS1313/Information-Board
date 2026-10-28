@@ -2,6 +2,11 @@
 #define ANNOUNCEMENTENTRYDIALOG_H
 
 #include <QDialog>
+#include <QFontComboBox>
+#include <QPushButton>
+#include <QColor>
+#include <qfontcombobox.h>
+#include <qpushbutton.h>
 #include "announcementmanager.h"
 
 class QPlainTextEdit;
@@ -36,6 +41,17 @@ private:
     QGroupBox *scheduleGroup;
 
     QString m_id;
+    QFontComboBox *fontCombo;
+    QSpinBox *fontSizeSpin;
+    QPushButton *textColorBtn;
+    QPushButton *bgColorBtn;
+
+    QColor m_textColor;
+    QColor m_bgColor;
+
+private slots:
+    void onPickTextColor();
+    void onPickBgColor();
 };
 
 #endif // ANNOUNCEMENTENTRYDIALOG_H

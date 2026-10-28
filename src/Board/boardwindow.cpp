@@ -56,42 +56,48 @@ void BoardWindow::setupUI()
     setMinimumSize(800, 600);
 
     centralWidget = new QWidget(this);
-    centralWidget->setStyleSheet("background-color: #2c3e50;");
+    centralWidget->setStyleSheet(
+        "QWidget {"
+        "   background: qlineargradient(x1:0,y1:0,x2:1,y2:1, "
+        "   stop:0 #1a1a2e, stop:1 #16213e);"
+        "}"
+    );
     setCentralWidget(centralWidget);
 
-    backgroundColor = QColor("#2c3e50");
+    backgroundColor = QColor("#1a1a2e");
     // Плитки прозрачные и без рамок — доска выглядит единым полотном,
     // а не набором отдельных ячеек, хотя каждый элемент по-прежнему
     // самостоятельно позиционируется и перетаскивается в редакторе макета.
     currentStyle = QString(
-                       "QLabel {"
-                       "   background-color: transparent;"
-                       "   color: white;"
-                       "   font-size: 16px;"
-                       "   font-family: 'Arial';"
-                       "   border: none;"
-                       "   padding: 8px;"
-                       "}"
-                       );
+        "QLabel {"
+        "   background-color: rgba(255, 255, 255, 15);" 
+        "   color: #ffffff;"
+        "   font-size: 18px;" 
+        "   font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;" 
+        "   border: 1px solid rgba(255, 255, 255, 20);" 
+        "   border-radius: 12px;" 
+        "   padding: 12px;"
+        "}"
+    );
 
     setStyleSheet(currentStyle);
 }
 
 void BoardWindow::createDefaultElements()
 {
-    createElement("logo", "🏢 Логотип", 20, 20, 120, 80);
+    createElement("logo", "ЛОГОТИП", 20, 20, 120, 80);
     createElement("clock", QTime::currentTime().toString("hh:mm:ss"), 660, 20, 120, 80);
     createElement("date", QDate::currentDate().toString("dd.MM.yyyy"), 660, 110, 120, 80);
-    createElement("slideshow", "🖼️ Слайдшоу", 180, 20, 440, 120);
+    createElement("slideshow", "СЛАЙДШОУ", 180, 20, 440, 120);
     createElement("content", "Доска готова к работе", 180, 150, 440, 120);
-    createElement("weather", "☀️ +22°C", 660, 200, 120, 80);
+    createElement("weather", "Погода", 660, 200, 120, 80);
     // Заготовки под данные, которые пока не получают реальных значений ни от одного API:
     // createElement("uvIndex", "УФ: 3", 20, 110, 100, 70);
     // createElement("airQuality", "AQI: 50", 20, 200, 120, 80);
-    createElement("wind", "3 м/с С", 660, 290, 120, 80);
+    createElement("wind", "Ветер", 660, 290, 120, 80);
     // createElement("precipitation", "0 мм", 660, 380, 100, 70);
-    createElement("humidity", "45%", 20, 380, 100, 70);
-    createElement("pressure", "1013 гПа", 140, 380, 100, 70);
+    createElement("humidity", "Влажность", 20, 380, 100, 70);
+    createElement("pressure", "Давление", 140, 380, 100, 70);
     // createElement("sunrise", "Восход 06:30", 20, 470, 100, 70);
     // createElement("sunset", "Закат 20:30", 140, 470, 100, 70);
     createElement("countdown", "Нет предстоящих событий", 20, 470, 240, 70);
@@ -225,6 +231,19 @@ void BoardWindow::setElementText(const QString &elementName, const QString &text
     if (elementName == "ticker") {
         tickerText = text;   // обновляем источник для анимации
     }
+}
+
+void BoardWindow::updateDynamicDefaults(const QString &announcementText)
+{
+    QString finalText = announcementText.trimmed();
+    if (finalText.isEmpty()) {
+        finalText = "Объявлений пока нет";
+    }
+    if (elements.contains("announcement")) {
+        elements["announcement"]->setText(finalText);
+        elementConfigs["announcement"].defaultText = finalText;
+    }
+    
 }
 
 void BoardWindow::setLogo(const QString &imagePath, int x, int y, int width, int height)
@@ -364,12 +383,13 @@ void BoardWindow::setBackgroundColor(const QColor &color)
     centralWidget->setStyleSheet(QString("QWidget { background-color: %1; }").arg(color.name()));
     QString style =
                         "QLabel {"
-                        "   background-color: transparent;"
+                        "   background-color: rgba(255, 255,255,15);"
                         "   color: white;"
-                        "   font-size: 16px;"
-                        "   font-family: 'Arial';"
-                        "   border: none;"
-                        "   padding: 8px;"
+                        "   font-size: 18px;"
+                        "   font-family: 'Segoe UI', 'Roboto', 'Helvetica NEue', Arial, sans-serif;"
+                        "   border: 1px solid rgba(255,255,255,20);"
+                        "   border-radius: 12px;"
+                        "   padding: 12px;"
                         "}";
     setStyleSheet(style);
     currentStyle = style;
@@ -535,13 +555,14 @@ QString BoardWindow::defaultTakeoverStyle() const
 {
     return
         "QLabel {"
-        "   background-color: rgba(0, 0, 0, 170);"
-        "   color: white;"
-        "   font-size: 28px;"
+        "   background-color: rgba(0, 0, 0, 220);"
+        "   color: #ffffff;"
+        "   font-size: 232px;"
+        "   font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;"
         "   font-weight: bold;"
-        "   border: 4px solid white;"
-        "   border-radius: 16px;"
-        "   padding: 24px;"
+        "   border: 2px solid rgba(255,255,255,30);"
+        "   border-radius: 20px;"
+        "   padding: 32px;"
         "}";
 }
 
@@ -549,8 +570,8 @@ QFont BoardWindow::defaultTakeoverFont() const
 {
     // Должен соответствовать font-size/font-weight из defaultTakeoverStyle() —
     // именно по этому шрифту считается размер плашки в updateTakeoverLabelGeometry().
-    QFont font("Arial");
-    font.setPixelSize(28);
+    QFont font("Segoe UI");
+    font.setPixelSize(32);
     font.setBold(true);
     return font;
 }

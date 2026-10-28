@@ -22,6 +22,8 @@ public:
     void showText(const QString &text);
     void showPermanentText(const QString &text);
 
+    void updateDynamicDefaults(const QString &announcementText);
+
     void setLogo(const QString &imagePath, int x = 20, int y = 20, int width = 120, int height = 80);
     void setSlideshowImage(const QString &imagePath);
     void setClock(int x = 660, int y = 20, int width = 120, int height = 80);

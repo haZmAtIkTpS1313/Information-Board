@@ -12,6 +12,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <qboxlayout.h>
+#include <qcheckbox.h>
 #include <qfiledialog.h>
 #include <qfileinfo.h>
 #include <qgroupbox.h>
@@ -147,7 +148,30 @@ void SettingsDialog::setupUI()
 
     mainLayout->addWidget(filesGroup);
 
+    QGroupBox *uiGroup = new QGroupBox("Видимость кнопок на панели управления", this);
+    QVBoxLayout *uiLayout = new QVBoxLayout(uiGroup);
+    
+    showTickerCheck = new QCheckBox("Показывать кнопку 'Бегущая строка'", uiGroup);
+    showLogoCheck = new QCheckBox("Показывать кнопку 'Установить логотип'", uiGroup);
+    
+    uiLayout->addWidget(showTickerCheck);
+    uiLayout->addWidget(showLogoCheck);
+    
+    mainLayout->addWidget(uiGroup);
+
+    QGroupBox *designerGroup = new QGroupBox("Элементы редактора макета", this);
+    QVBoxLayout *designerLayout = new QVBoxLayout(designerGroup);
+    
+    hideTickerDesignerCheck = new QCheckBox("Скрыть 'Бегущую строку' в палитре элементов", designerGroup);
+    hideLogoDesignerCheck = new QCheckBox("Скрыть 'Логотип' в палитре элементов", designerGroup);
+    
+    designerLayout->addWidget(hideTickerDesignerCheck);
+    designerLayout->addWidget(hideLogoDesignerCheck);
+    
+    mainLayout->addWidget(designerGroup);
+
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+
     connect(buttons, &QDialogButtonBox::accepted, this, &SettingsDialog::onSave);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     mainLayout->addWidget(buttons);
@@ -254,6 +278,10 @@ void SettingsDialog::loadSettings()
             selectedFilesList->addItem(item);
         }
     }
+    showTickerCheck->setChecked(settings.value("ui/showTickerButton", true).toBool());
+    showLogoCheck->setChecked(settings.value("ui/showLogoButton", true).toBool());
+    hideTickerDesignerCheck->setChecked(settings.value("designer/hideTicker", false).toBool());
+    hideLogoDesignerCheck->setChecked(settings.value("designer/hideLogo", false).toBool());
 }
 
 void SettingsDialog::onSave()
@@ -273,6 +301,10 @@ void SettingsDialog::onSave()
     for (int i = 0; i < selectedFilesList->count(); ++i) {
         file << selectedFilesList->item(i)->data(Qt::UserRole).toString();
     }
+    settings.setValue("ui/showTickerButton", showTickerCheck->isChecked());
+    settings.setValue("ui/showLogoButton", showLogoCheck->isChecked());
+    settings.setValue("designer/hideTicker", hideTickerDesignerCheck->isChecked());
+    settings.setValue("designer/hideLogo", hideLogoDesignerCheck->isChecked());
     settings.setValue("slideshow/selectedFiles", file);
     settings.sync();
     accept();

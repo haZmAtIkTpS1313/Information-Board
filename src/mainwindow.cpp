@@ -24,6 +24,7 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QBoxLayout>
+#include <qlayoutitem.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -105,7 +106,26 @@ MainWindow::MainWindow(QWidget *parent)
             }
         }
     }
-    connect(announcementManager, &AnnouncementManager::showAnnouncement, this, &MainWindow::onAnnouncementShow);
+    connect(announcementManager, &AnnouncementManager::showAnnouncement, this, [this](const Announcement &a) {
+        if (!boardWindow) return;
+        QString customStyle = QString(
+            "QLabel {"
+            "   background-color: %1;"
+            "   color: %2;"
+            "   font-family: '%3';"
+            "   font-size: %4px;"
+            "   font-weight: bold;"
+            "   border-radius: 12px;"
+            "   padding: 16px;"
+            "   border: 1px solid rgba(255,255,255,30);"
+            "}"
+        ).arg(a.bgColor).arg(a.textColor).arg(a.fontName).arg(a.fontSize);
+
+        boardWindow->setElementStyle("announcement", customStyle);
+        boardWindow->setElementText("announcement", a.text);
+        
+        boardWindow->showElement("announcement", true);
+});
     announcementManager->start();
 
     slideshowManager = new SlideshowManager(this);
@@ -242,6 +262,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(restoreBoardBtn, &QPushButton::clicked,
             this, &MainWindow::handleRestoreBoardButtonClicked);
+
+    if(ui->toggleTickerButton) {
+        ui->toggleTickerButton->setVisible(settings.value("ui/showTickerButton", true).toBool());
+    }
+    if (ui->setLogoImageButton) {
+        ui->setLogoImageButton->setVisible(settings.value("ui/showLogoButton",true).toBool());
+    }
 }
 
 MainWindow::~MainWindow()
@@ -938,6 +965,9 @@ void MainWindow::handleSettingsButtonClicked()
         applyWeatherSettings();
         applySlideshowSettings();
         statusBar()->showMessage("Настройки сохранены", 3000);
+        if (designerWidget) {
+            designerWidget->refreshPalette();
+        }
     }
 }
 

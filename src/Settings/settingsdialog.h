@@ -41,6 +41,11 @@ private:
     QListWidget *selectedFilesList;
     QPushButton *addFilesButton;
     QPushButton *removeFilesButton;
+
+    QCheckBox *showTickerCheck;
+    QCheckBox *showLogoCheck;
+    QCheckBox *hideTickerDesignerCheck;
+    QCheckBox *hideLogoDesignerCheck;
 };
 
 #endif // SETTINGSDIALOG_H

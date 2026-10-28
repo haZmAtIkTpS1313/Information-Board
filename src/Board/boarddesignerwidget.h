@@ -54,10 +54,12 @@ public:
 
     QList<ElementConfig> getCurrentLayout() const;
     void applyLayout(const QList<ElementConfig> &layout);
+    void refreshPalette();
 
     void setBoardResolution(int windth, int height);
     int getBoardWidth() const { return currentBoardWidth; }
     int getBoardHeight() const { return currentBoardHeight; }
+    QVBoxLayout *getPaletteLayout() const {return paletteLayout;}
 signals:
     void layoutChanged();
 public slots:

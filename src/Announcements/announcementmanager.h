@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QTime>
 #include <QSet>
+#include <QFont>
+#include <QColor>
 
 struct Announcement {
     QString id;
@@ -18,6 +20,11 @@ struct Announcement {
     QTime timeStart;             
     QTime timeEnd;               
     QSet<int> days;              
+    QString fontName = "Arial";
+    int fontSize = 24;
+    QString textColor = "#ffffff";
+    QString bgColor = "rgba(0,0,0,180)";
+
 };
 
 class AnnouncementManager : public QObject
@@ -44,7 +51,7 @@ public:
     void load();
 
 signals:
-    void showAnnouncement(const QString &text, int durationSeconds);
+    void showAnnouncement(const Announcement &a);
     void hideAnnouncement();      
     void announcementsChanged();
 

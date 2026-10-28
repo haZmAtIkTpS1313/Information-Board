@@ -127,7 +127,7 @@ void AnnouncementManager::onTick()
         
         if (isAnnouncementActiveNow(m_announcements[idx])) {
             int duration = m_announcements[idx].displayDuration;
-            emit showAnnouncement(m_announcements[idx].text, duration);
+            emit showAnnouncement(m_announcements[idx]);
             
             if (duration > 0) {
                 m_hideTimer->start(duration * 1000);
@@ -173,6 +173,10 @@ void AnnouncementManager::save()
         obj["timeStart"] = a.timeStart.toString("HH:mm");
         obj["timeEnd"] = a.timeEnd.toString("HH:mm");
         
+        obj["fontName"] = a.fontName;
+        obj["fontSize"] = a.fontSize;
+        obj["textColor"] = a.textColor;
+        obj["bgColor"] = a.bgColor;
         QJsonArray daysArray;
         for (int day : a.days) daysArray.append(day);
         obj["days"] = daysArray;
@@ -209,13 +213,16 @@ void AnnouncementManager::load()
         a.text = obj.value("text").toString();
         a.priority = obj.value("priority").toInt(3);
         a.enabled = obj.value("enabled").toBool(true);
-        
-        // === НОВЫЕ ПОЛЯ ===
+
         a.displayDuration = obj.value("displayDuration").toInt(10);
         a.hasSchedule = obj.value("hasSchedule").toBool(false);
         a.timeStart = QTime::fromString(obj.value("timeStart").toString("00:00"), "HH:mm");
         a.timeEnd = QTime::fromString(obj.value("timeEnd").toString("23:59"), "HH:mm");
-        
+
+        a.fontName = obj.value("fontName").toString("Arial");
+        a.fontSize = obj.value("fontSize").toInt(24);
+        a.textColor = obj.value("textColor").toString("#ffffff");
+        a.bgColor = obj.value("bgColor").toString("rgba(0,0,0,180)");
         for (const auto &dayValue : obj.value("days").toArray()) {
             a.days.insert(dayValue.toInt());
         }
