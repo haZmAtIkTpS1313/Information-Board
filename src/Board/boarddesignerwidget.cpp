@@ -1,4 +1,5 @@
 #include "boarddesignerwidget.h"
+#include "Board/draggableelement.h"
 #include "elementpropertiesdialog.h"
 #include <QSettings>
 #include <QDir>
@@ -6,13 +7,17 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QDragEnterEvent>
+#include <QDialogButtonBox>
 #include <QMimeData>
 #include <QDebug>
 #include <QComboBox>
 #include <QPushButton>
 #include <QInputDialog>
 #include <QScrollArea>
+#include <qboxlayout.h>
+#include <qformlayout.h>
 #include <qglobal.h>
+#include <qlineedit.h>
 #include <qmessagebox.h>
 #include <qnamespace.h>
 #include <qpaintdevice.h>
@@ -270,6 +275,7 @@ QList<ElementConfig> BoardDesignerWidget::getCurrentLayout() const
         cfg.type = element->getElementType();
         cfg.displayName = element->getDisplayName();
         cfg.defaultText = element->getDefaultText();
+        cfg.textTemplate = element->getTextTemplate();
         QRect geom = element->geometry();
         cfg.x = geom.x();
         cfg.y = geom.y();
@@ -286,6 +292,15 @@ void BoardDesignerWidget::applyLayout(const QList<ElementConfig> &layout)
 {
     clearDesigner();
     for (const auto &cfg : layout) {
+        DraggableElement *element = new DraggableElement(cfg.type, cfg.displayName, cfg.defaultText, designerArea);
+        element->setTextTemplate(cfg.textTemplate);
+        if (!cfg.style.isEmpty()) {
+            element->setCustomStyle(cfg.style);
+        }
+
+        element->setGeometry(cfg.x, cfg.y, cfg.width, cfg.height);
+        element->setPlaced(true);
+        placedElements[cfg.type] = element;
         addElement(cfg.type, cfg.displayName, cfg.defaultText,
                    cfg.x, cfg.y, cfg.width, cfg.height, cfg.style);
     }
@@ -646,17 +661,33 @@ void BoardDesignerWidget::onElementDeleted(DraggableElement *element)
 void BoardDesignerWidget::onElementPropertiesRequested(DraggableElement *element)
 {
     if (!element) return;
+    QDialog dialog(this);
+    dialog.setWindowTitle("Свойства: " + element->getDisplayName());
+    dialog.setMinimumWidth(400);
 
-    ElementPropertiesDialog dialog(this);
-    dialog.setText(element->getDefaultText());
-    dialog.setSize(element->width(), element->height());
-    dialog.setStyle(element->getCustomStyle());
+    QVBoxLayout *mainLayout = new QVBoxLayout(&dialog);
+    QFormLayout *formLayout = new QFormLayout();
+
+    QLineEdit *textEdit = new QLineEdit(element->getDefaultText(), &dialog);
+    textEdit->setPlaceholderText("Данные загружаються.....");
+    formLayout->addRow("Текст по умолчанию: ", textEdit);
+
+    QLineEdit *templateEdit = new QLineEdit(element->getTextTemplate(),&dialog);
+    templateEdit->setPlaceholderText("Влажность: {value}%");
+    templateEdit->setToolTip("Используйте {value} для подстановки реальных данных. Если оставить пустым, будет использоваться текст по умолчанию.");
+    formLayout->addRow("Шаблон отображения: ", templateEdit);
+
+    mainLayout->addLayout(formLayout);
+
+    QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    mainLayout->addWidget(buttons);
 
     if (dialog.exec() == QDialog::Accepted) {
-        element->setDefaultText(dialog.text());
-        element->setText(dialog.text());
-        element->resize(dialog.widthValue(), dialog.heightValue());
-        element->setCustomStyle(dialog.buildStyle());
+        element->setDefaultText(textEdit->text());
+        element->setTextTemplate(templateEdit->text());
+
         emit layoutChanged();
     }
 }

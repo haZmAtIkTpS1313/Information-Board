@@ -28,6 +28,7 @@ struct ElementConfig {
     QString type;
     QString displayName;
     QString defaultText;
+    QString textTemplate;
     QString style;
     int x;
     int y;

@@ -128,7 +128,6 @@ void AnnouncementManager::onTick()
         if (isAnnouncementActiveNow(m_announcements[idx])) {
             int duration = m_announcements[idx].displayDuration;
             emit showAnnouncement(m_announcements[idx]);
-            
             if (duration > 0) {
                 m_hideTimer->start(duration * 1000);
             } else {

@@ -5,8 +5,8 @@
 #include <QContextMenuEvent>
 #include <QDebug>
 
-static const int HANDLE_SIZE = 8;       // визуальный размер ручки
-static const int HANDLE_HIT_AREA = 10;  // зона попадания мыши (чуть больше визуальной)
+static const int HANDLE_SIZE = 8;      
+static const int HANDLE_HIT_AREA = 10;
 
 DraggableElement::DraggableElement(const QString &elementType, const QString &displayName,
                                    const QString &defaultText, QWidget *parent)
@@ -14,6 +14,8 @@ DraggableElement::DraggableElement(const QString &elementType, const QString &di
     , elementType(elementType)
     , displayName(displayName)
     , defaultText(defaultText)
+    , textTemplate("")
+    , customStyle("")
     , misPlaced(false)
     , isDragging(false)
     , isResizing(false)

@@ -227,9 +227,19 @@ void BoardWindow::clearScreen()
 
 void BoardWindow::setElementText(const QString &elementName, const QString &text)
 {
-    updateElementText(elementName, text);
-    if (elementName == "ticker") {
-        tickerText = text;   // обновляем источник для анимации
+    if (elements.contains(elementName)) {
+        QString finalText = text;
+
+        if (elementConfigs.contains(elementName) && !elementConfigs[elementName].textTemplate.isEmpty()) {
+            finalText = elementConfigs[elementName].textTemplate;
+            finalText.replace("{value}", text);
+        }
+
+        elements[elementName]->setText(finalText);
+        
+        if (elementName == "ticker") {
+            tickerText = finalText; 
+        }
     }
 }
 

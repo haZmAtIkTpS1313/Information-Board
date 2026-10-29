@@ -38,6 +38,9 @@ public:
     QString getCustomStyle() const { return customStyle; }
     void setCustomStyle(const QString &style) { customStyle = style; }
 
+    QString getTextTemplate() const { return textTemplate; }
+    void setTextTemplate(const QString &tmpl) { textTemplate = tmpl; }
+
     bool isPlaced() const { return misPlaced; }
     void setPlaced(bool placed) { misPlaced = placed; }
 
@@ -70,6 +73,7 @@ private:
     QString elementType;
     QString displayName;
     QString defaultText;
+    QString textTemplate;
     QString customStyle;
     bool misPlaced;
     QPoint dragStartPosition;
