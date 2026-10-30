@@ -1,4 +1,5 @@
 #include "announcementmanager.h"
+#include "Utils/logger.h
 #include <QDir>
 #include <QFile>
 #include <QJsonDocument>
@@ -155,40 +156,44 @@ QString AnnouncementManager::configPath() const
 
 void AnnouncementManager::save()
 {
-    QJsonObject root;
-    root["globalEnabled"] = m_globalEnabled;
-    root["intervalSeconds"] = m_intervalSeconds;
-
-    QJsonArray array;
-    for (const Announcement &a : m_announcements) {
+    void AnnouncementManager::save()
+{
+    LOG_INFO("Сохранение списка объявлений..."); 
+    
+    QJsonArray arr;
+    for (const auto &a : m_announcements) {
         QJsonObject obj;
         obj["id"] = a.id;
         obj["text"] = a.text;
         obj["priority"] = a.priority;
         obj["enabled"] = a.enabled;
-        
         obj["displayDuration"] = a.displayDuration;
         obj["hasSchedule"] = a.hasSchedule;
-        obj["timeStart"] = a.timeStart.toString("HH:mm");
-        obj["timeEnd"] = a.timeEnd.toString("HH:mm");
-        
+        if (a.hasSchedule) {
+            obj["timeStart"] = a.timeStart.toString("HH:mm");
+            obj["timeEnd"] = a.timeEnd.toString("HH:mm");
+            QJsonArray daysArr;
+            for (int d : a.days) daysArr.append(d);
+            obj["days"] = daysArr;
+        }
         obj["fontName"] = a.fontName;
         obj["fontSize"] = a.fontSize;
         obj["textColor"] = a.textColor;
         obj["bgColor"] = a.bgColor;
-        QJsonArray daysArray;
-        for (int day : a.days) daysArray.append(day);
-        obj["days"] = daysArray;
         
-        array.append(obj);
+        arr.append(obj);
     }
-    root["announcements"] = array;
 
+    QJsonDocument doc(arr);
     QFile file(configPath());
     if (file.open(QIODevice::WriteOnly)) {
-        file.write(QJsonDocument(root).toJson());
+        file.write(doc.toJson());
         file.close();
+        LOG_INFO("Объявления успешно сохранены"); 
+    } else {
+        LOG_ERROR(QString("Не удалось сохранить объявления в %1").arg(configPath())); 
     }
+}
 }
 
 void AnnouncementManager::load()

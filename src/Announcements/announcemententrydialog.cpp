@@ -1,4 +1,5 @@
 #include "announcemententrydialog.h"
+#include "Utils/logger.h"
 #include <QColorDialog>
 #include <QVBoxLayout>
 #include <QFormLayout>
@@ -11,8 +12,10 @@
 #include <QLabel>
 #include <QGroupBox>
 #include <QDialogButtonBox>
+#include <cerrno>
 #include <qformlayout.h>
 #include <qgroupbox.h>
+#include <qobject.h>
 
 static const char *kDayShort[7] = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
 

@@ -1,10 +1,15 @@
 #include "mainwindow.h"
 #include "Board/boardwindow.h"
+#include "Utils/logger.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    Logger::instance().init();
+    Logger::instance().setLogoLevel(Logger::Info);
+    LOG_INFO("Приложение запущено");
 
     app.setApplicationName("Information Board");
     app.setApplicationVersion("1.0");
