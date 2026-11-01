@@ -12,7 +12,6 @@
 #include <QLabel>
 #include <QGroupBox>
 #include <QDialogButtonBox>
-#include <cerrno>
 #include <qformlayout.h>
 #include <qgroupbox.h>
 #include <qobject.h>
@@ -132,6 +131,8 @@ void AnnouncementEntryDialog::setupUI()
 void AnnouncementEntryDialog::updateScheduleVisibility()
 {
     bool enabled = scheduleGroup->isChecked();
+    LOG_DEBUG(QString("Расписание объявлений: %1")
+        .arg(enabled ? "ВКЛЮЧЕНО" : "ВЫКЛЮЧЕНО"));
     timeStartEdit->setEnabled(enabled);
     timeEndEdit->setEnabled(enabled);
     for (int i = 0; i < 7; ++i) {
@@ -141,6 +142,11 @@ void AnnouncementEntryDialog::updateScheduleVisibility()
 
 void AnnouncementEntryDialog::setAnnouncement(const Announcement &announcement)
 {
+    LOG_DEBUG(QString("Загрузка объявления в диалог редактирования: \"%1\" (ID: %2, приоритет: %3)")
+              .arg(announcement.text.left(40))
+              .arg(announcement.id)
+              .arg(announcement.priority));
+    
     m_id = announcement.id;
     textEdit->setPlainText(announcement.text);
     prioritySpin->setValue(announcement.priority);
@@ -189,16 +195,24 @@ Announcement AnnouncementEntryDialog::announcement() const
     a.fontName = fontCombo->currentFont().family();
     a.fontSize = fontSizeSpin->value();
     a.textColor = m_textColor.name();
-    a.bgColor = m_bgColor.name(); 
+    a.bgColor = m_bgColor.name();
+
+    LOG_INFO(QString("Собрано объявление из диалога: \"%1\" (шрифт: %2, размер: %3, цвет текста: %4)")
+             .arg(a.text.left(40))
+             .arg(a.fontName)
+             .arg(a.fontSize)
+             .arg(a.textColor));
 
     return a;
 }
+
 void AnnouncementEntryDialog::onPickTextColor()
 {
     QColor color = QColorDialog::getColor(m_textColor, this, "Выберите цвет текста");
     if (color.isValid()) {
         m_textColor = color;
         textColorBtn->setStyleSheet(QString("background-color: %1; color: black; border: 1px solid #ccc; border-radius: 4px;").arg(m_textColor.name()));
+        LOG_DEBUG(QString("Цвет текста изменён на: %1").arg(m_textColor.name()));
     }
 }
 
@@ -208,5 +222,6 @@ void AnnouncementEntryDialog::onPickBgColor()
     if (color.isValid()) {
         m_bgColor = color;
         bgColorBtn->setStyleSheet(QString("background-color: %1; color: white; border: 1px solid #ccc; border-radius: 4px;").arg(m_bgColor.name()));
+        LOG_DEBUG(QString("Цвет фона изменён на: %1").arg(m_bgColor.name()));
     }
 }

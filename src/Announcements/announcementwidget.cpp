@@ -1,6 +1,7 @@
 #include "announcementwidget.h"
 #include "announcementmanager.h"
 #include "announcemententrydialog.h"
+#include "Utils/logger.h"  
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QTableWidget>
@@ -102,12 +103,20 @@ void AnnouncementWidget::refreshTable()
         
         m_table->setItem(row, 4, new QTableWidgetItem(a.enabled ? "Да" : "Нет"));
     }
+    
+    LOG_DEBUG(QString("Таблица объявлений обновлена, строк: %1").arg(items.size()));
 }
+
 void AnnouncementWidget::onAddAnnouncement()
 {
+    LOG_INFO("Пользователь открыл диалог добавления объявления");
+    
     AnnouncementEntryDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
+        LOG_INFO("Пользователь подтвердил добавление объявления");
         m_manager->addAnnouncement(dialog.announcement());
+    } else {
+        LOG_DEBUG("Пользователь отменил добавление объявления");
     }
 }
 
@@ -115,13 +124,20 @@ void AnnouncementWidget::onEditAnnouncement()
 {
     int row = selectedRow();
     if (row < 0) {
+        LOG_DEBUG("Попытка редактирования без выбора строки");
         QMessageBox::information(this, "Изменить", "Выберите объявление в таблице.");
         return;
     }
+    
+    LOG_INFO(QString("Пользователь открыл диалог редактирования объявления #%1").arg(row));
+    
     AnnouncementEntryDialog dialog(this);
     dialog.setAnnouncement(m_manager->announcements()[row]);
     if (dialog.exec() == QDialog::Accepted) {
+        LOG_INFO(QString("Пользователь подтвердил редактирование объявления #%1").arg(row));
         m_manager->updateAnnouncement(row, dialog.announcement());
+    } else {
+        LOG_DEBUG(QString("Пользователь отменил редактирование объявления #%1").arg(row));
     }
 }
 
@@ -129,9 +145,15 @@ void AnnouncementWidget::onRemoveAnnouncement()
 {
     int row = selectedRow();
     if (row < 0) {
+        LOG_DEBUG("Попытка удаления без выбора строки");
         QMessageBox::information(this, "Удалить", "Выберите объявление в таблице.");
         return;
     }
+    
+    LOG_INFO(QString("Пользователь удаляет объявление #%1: \"%2\"")
+             .arg(row)
+             .arg(m_manager->announcements()[row].text.left(40)));
+    
     m_manager->removeAnnouncement(row);
 }
 

@@ -1,5 +1,6 @@
 #include "boarddesignerwidget.h"
 #include "Board/draggableelement.h"
+#include "Utils/logger.h"
 #include "elementpropertiesdialog.h"
 #include <QSettings>
 #include <QDir>
@@ -147,6 +148,8 @@ void BoardDesignerWidget::setupUI()
 
 void BoardDesignerWidget::createElementPalette()
 {
+    LOG_DEBUG(QString("Создание элемента на панели \"%1\"")
+        .arg(elements.size()));
     QSettings settings(QDir::homePath() + "/.InformationBoard/settings.ini", QSettings::IniFormat);
     bool hideTicker = settings.value("designer/hideTicker", false).toBool();
     bool hideLogo = settings.value("designer/hideLogo", false).toBool();
@@ -172,9 +175,11 @@ void BoardDesignerWidget::createElementPalette()
     };
 
     if (!hideLogo) {
+        LOG_INFO("Элемент логотип был добавлен");
         elementsList.prepend({"logo", "Логотип", "Логотип", 120, 80});
     }
     if (!hideTicker) {
+        LOG_INFO("Элемент бегущей строки был добавлен");
         elementsList.append({"ticker", "Бегущая строка", "", 400, 60});
     }
 
@@ -194,6 +199,7 @@ void BoardDesignerWidget::createElementPalette()
     }
     
     paletteLayout->addStretch();
+    LOG_DEBUG(QString("Элементы доски были созданы").arg(elementsList.size()));
 }
 
 void BoardDesignerWidget::addElement(const QString &elementType, const QString &displayName,
@@ -201,6 +207,7 @@ void BoardDesignerWidget::addElement(const QString &elementType, const QString &
                                      const QString &style)
 {
     if (placedElements.contains(elementType)) {
+        LOG_INFO("Удаление типа элемента");
         removeElement(elementType);
     }
 
@@ -243,11 +250,18 @@ void BoardDesignerWidget::addElement(const QString &elementType, const QString &
         designerArea->setActiveGuides(QList<QLine>());
     });
     emit layoutChanged();
+    LOG_INFO("Элементы добавлены");
 }
 
 void BoardDesignerWidget::removeElement(const QString &elementType)
 {
-    if (!placedElements.contains(elementType)) return;
+    if (!placedElements.contains(elementType)) 
+    {
+        LOG_WARNING(QString("Попытка удалить несуществеющий элемент: %1").arg(elementType));
+        return;
+    }
+
+    LOG_INFO(QString("Удаление элемента с доски: %1").arg(elementType));
 
     DraggableElement *element = placedElements[elementType];
     element->deleteLater();
@@ -264,6 +278,7 @@ void BoardDesignerWidget::clearDesigner()
     }
     placedElements.clear();
     emit layoutChanged();
+    LOG_INFO("Очистка доски произошла");
 }
 
 QList<ElementConfig> BoardDesignerWidget::getCurrentLayout() const
@@ -285,11 +300,14 @@ QList<ElementConfig> BoardDesignerWidget::getCurrentLayout() const
         cfg.style = element->getCustomStyle();
         layout.append(cfg);
     }
+    
+    LOG_DEBUG(QString("Сборка конфигурации макета: %1 элементов").arg(layout.size()));
     return layout;
 }
 
 void BoardDesignerWidget::applyLayout(const QList<ElementConfig> &layout)
 {
+    LOG_INFO(QString("Применение сохраненного макета: %1 элементов").arg(layout.size()));
     clearDesigner();
     for (const auto &cfg : layout) {
         DraggableElement *element = new DraggableElement(cfg.type, cfg.displayName, cfg.defaultText, designerArea);
@@ -308,29 +326,23 @@ void BoardDesignerWidget::applyLayout(const QList<ElementConfig> &layout)
 
 void BoardDesignerWidget::resetToDefaultLayout()
 {
+    LOG_INFO("Сброс макета доски к настройкам по умолчанию");
     setBoardResolution(800, 640);
     resolutionCombo->setCurrentIndex(0);
 
     clearDesigner();
 
-    addElement("logo", "Логотип", "🏢 Логотип", 20, 20, 120, 80);
-    addElement("clock", "Часы", "12:00:00", 660, 20, 120, 80);
+    addElement("logo", "Логотип", "ЛОГОТИП", 20, 20, 120, 80);
+    addElement("clock", "Часы", "00:00:00", 660, 20, 120, 80);
     addElement("date", "Дата", "01.01.2024", 660, 110, 120, 80);
-    addElement("slideshow", "Слайдшоу", "🖼️ Слайдшоу", 180, 20, 440, 120);
-    addElement("content", "Контент", "Доска готова к работе", 180, 150, 440, 120);
-    addElement("weather", "Погода", "☀️ +22°C", 660, 200, 120, 80);
-    // Заготовки под данные, которые пока не получают реальных значений ни от одного API:
-    // addElement("uvIndex", "УФ-индекс", "УФ: 3", 20, 110, 100, 70);
-    // addElement("airQuality", "Качество воздуха", "AQI: 50", 20, 200, 120, 80);
-    addElement("wind", "Ветер", "3 м/с С", 660, 290, 120, 80);
-    // addElement("precipitation", "Осадки", "0 мм", 660, 380, 100, 70);
-    addElement("humidity", "Влажность", "45%", 20, 380, 100, 70);
-    addElement("pressure", "Давление", "1013 гПа", 140, 380, 100, 70);
-    // addElement("sunrise", "Восход", "06:30", 20, 470, 100, 70);
-    // addElement("sunset", "Закат", "20:30", 140, 470, 100, 70);
-    addElement("countdown", "Обратный отсчёт", "До события: --:--:--", 20, 470, 240, 70);
+    addElement("slideshow", "Слайдшоу", "СЛАЙДШОУ", 180, 20, 440, 120);
+    addElement("content", "Контент", "Основной контент", 180, 150, 440, 120);
+    addElement("weather", "Погода", "Погода", 660, 200, 120, 80);
+    addElement("wind", "Ветер", "Ветер", 660, 290, 120, 80);
+    addElement("humidity", "Влажность", "Влажность", 20, 380, 100, 70);
+    addElement("pressure", "Давление", "Давление", 140, 380, 100, 70);
+    addElement("countdown", "Обратный отсчёт", "00:00:00", 20, 470, 240, 70);
     addElement("announcement", "Объявление", "Объявлений пока нет", 280, 470, 480, 70);
-    //addElement("ticker", "Бегущая строка", "Новости...", 20, 560, 760, 60);
 
     emit layoutChanged();
 }
@@ -381,6 +393,9 @@ void BoardDesignerWidget::dropEvent(QDropEvent *event)
 
     addElement(elementType, displayName, defaultText,
                designerPos.x(), designerPos.y(), defaultWidth, defaultHeight);
+
+    LOG_INFO(QString("Добавлен новый элемент на доску: %1 (позиция: %2, %3)")
+             .arg(elementType).arg(designerPos.x()).arg(designerPos.y()));
 
     event->acceptProposedAction();
     emit layoutChanged();
@@ -599,7 +614,6 @@ void BoardDesignerWidget::onElementGeometryChanged(DraggableElement *element, co
 
     QRect geom = newGeometry;
 
-    // 1. Ограничения границами области
     int minX = 0, minY = 0;
     int maxX = designerArea->width();
     int maxY = designerArea->height();
@@ -609,22 +623,17 @@ void BoardDesignerWidget::onElementGeometryChanged(DraggableElement *element, co
     if (geom.right() > maxX) geom.setRight(maxX);
     if (geom.bottom() > maxY) geom.setBottom(maxY);
 
-    // 2. Минимальный размер
     if (geom.width() < element->minimumWidth()) geom.setWidth(element->minimumWidth());
     if (geom.height() < element->minimumHeight()) geom.setHeight(element->minimumHeight());
 
-    // 3. Ищем совпадение размеров с другими элементами
     int snappedWidth = geom.width();
     int snappedHeight = geom.height();
     QList<QLine> sizeGuides = findSizeGuides(element, geom, snappedWidth, snappedHeight);
 
     if (!sizeGuides.isEmpty()) {
-        // Применяем snap по размеру
         geom.setWidth(snappedWidth);
         geom.setHeight(snappedHeight);
     }
-
-    // 4. Ищем совпадение позиций (для линий выравнивания по краям)
     int snappedX = geom.x();
     int snappedY = geom.y();
     QList<QLine> alignGuides = findAlignmentGuides(element, geom.x(), geom.y(), snappedX, snappedY);
@@ -633,7 +642,6 @@ void BoardDesignerWidget::onElementGeometryChanged(DraggableElement *element, co
         geom.moveLeft(snappedX);
         geom.moveTop(snappedY);
     } else if (sizeGuides.isEmpty()) {
-        // Если никаких совпадений нет — применяем snap-to-grid
         int gridX = qRound(double(geom.x()) / GRID_SIZE) * GRID_SIZE;
         int gridY = qRound(double(geom.y()) / GRID_SIZE) * GRID_SIZE;
         geom.moveLeft(gridX);
@@ -642,7 +650,6 @@ void BoardDesignerWidget::onElementGeometryChanged(DraggableElement *element, co
 
     element->setGeometry(geom);
 
-    // 5. Показываем все линии
     QList<QLine> allGuides;
     allGuides.append(sizeGuides);
     allGuides.append(alignGuides);
@@ -655,6 +662,7 @@ void BoardDesignerWidget::onElementDeleted(DraggableElement *element)
 {
     if (!element) return;
     QString elementType = element->getElementType();
+    LOG_INFO(QString("Элемент удален с доски: %1").arg(elementType));
     removeElement(elementType);
 }
 
@@ -688,6 +696,8 @@ void BoardDesignerWidget::onElementPropertiesRequested(DraggableElement *element
         element->setDefaultText(textEdit->text());
         element->setTextTemplate(templateEdit->text());
 
+        LOG_INFO(QString("Обновлены свойства элемента '%1' . Шаблон: '%2'").arg(element->getDisplayName()).arg(element->getTextTemplate().isEmpty() ? "нет" : element->getTextTemplate()));
+
         emit layoutChanged();
     }
 }
@@ -720,11 +730,13 @@ void BoardDesignerWidget::onApplyResolution()
             newW = parts[0].toInt();
             newH = parts[1].toInt();
         } else {
+            LOG_WARNING("Ошибка формата пользовательского разрешения");
             QMessageBox::warning(this, "Ошибка формата", "Введите размеры в формате ШxВ (например, 1920x1080)");
             return;
         }
 
         if (newW <= 0 || newH <= 0) {
+            LOG_WARNING("Некорректорные размеры пользовательского разрешения (<= 0)");
             QMessageBox::warning(this, "Ошибка", "Разрешение должно быть больше 0");
             return;
         }
@@ -744,6 +756,7 @@ void BoardDesignerWidget::onApplyResolution()
     }
 
     if (newW > 0 && newH > 0) {
+        LOG_INFO(QString("Измерение разрешения доски: %1 x %2").arg(newW).arg(newH));
         setBoardResolution(newW, newH);
     }
 
@@ -752,6 +765,8 @@ void BoardDesignerWidget::onApplyResolution()
 void BoardDesignerWidget::setBoardResolution(int width, int height)
 {
     if (width <= 0 || height <= 0) return;
+
+    LOG_DEBUG(QString("Масштабирование элементов под новое разрешение: %1x%2").arg(width).arg(height));
 
     double scaleX = (double)width / currentBoardWidth;
     double scaleY = (double)height / currentBoardHeight;
@@ -777,6 +792,7 @@ void BoardDesignerWidget::setBoardResolution(int width, int height)
 }
 void BoardDesignerWidget::refreshPalette()
 {
+    LOG_DEBUG("Обновление палитры элементов дизайнера");
     QLayoutItem *child;
     while ((child = paletteLayout->takeAt(0)) != nullptr) {
         if (child->widget()) {
