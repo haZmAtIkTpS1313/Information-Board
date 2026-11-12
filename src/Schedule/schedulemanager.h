@@ -22,6 +22,7 @@ struct ScheduleEntry {
     QString designPath;  // необязательный .design-профиль, который доска применит при срабатывании
     int volume = 80;     // 0..100
     bool enabled = true;
+    bool isPinned = false;
 };
 
 class ScheduleManager : public QObject
@@ -42,6 +43,7 @@ public:
     bool globalEnabled() const { return m_globalEnabled; }
     void setGlobalEnabled(bool enabled);
     void setEntryEnabled(const QString &id, bool enabled);
+    void setEntryPinned(const QString &id, bool enabled);
 
     bool quietHoursEnabled() const { return m_quietHoursEnabled; }
     QTime quietHoursStart() const { return m_quietHoursStart; }

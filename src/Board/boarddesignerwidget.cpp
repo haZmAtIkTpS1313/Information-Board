@@ -21,6 +21,7 @@
 #include <qlineedit.h>
 #include <qmessagebox.h>
 #include <qnamespace.h>
+#include <qobject.h>
 #include <qpaintdevice.h>
 
 BoardDesignerWidget::BoardDesignerWidget(QWidget *parent)
@@ -350,8 +351,10 @@ void BoardDesignerWidget::resetToDefaultLayout()
 void BoardDesignerWidget::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasFormat("application/x-element-type")) {
+        LOG_INFO("Визуалиция mimeData в Enter в формате application/x-element-type");
         event->acceptProposedAction();
     } else {
+        LOG_INFO("Не прошла визуализация");
         event->ignore();
     }
 }
@@ -359,8 +362,10 @@ void BoardDesignerWidget::dragEnterEvent(QDragEnterEvent *event)
 void BoardDesignerWidget::dragMoveEvent(QDragMoveEvent *event)
 {
     if (event->mimeData()->hasFormat("application/x-element-type")) {
+        LOG_INFO("Визуалиция mimeData в Move в формате application/x-element-type");
         event->acceptProposedAction();
     } else {
+        LOG_INFO("Не прошла визуализация");
         event->ignore();
     }
 }
@@ -403,22 +408,32 @@ void BoardDesignerWidget::dropEvent(QDropEvent *event)
 
 void BoardDesignerWidget::onElementMoved(DraggableElement *element, int deltaX, int deltaY)
 {
-    if (!element) return;
+    if (!element)
+    {
+        LOG_WARNING(QString("Не найден элемент: %1").arg(element->getElementType()));
+        return;
+    }
     QRect geom = element->geometry();
 
     int newX = geom.x() + deltaX;
     int newY = geom.y() + deltaY;
+    LOG_INFO("{newX}, {newY}");
 
     int maxX = designerArea->width() - geom.width();
     int maxY = designerArea->height() - geom.height();
     newX = qBound(0, newX, qMax(0, maxX));
     newY = qBound(0, newY, qMax(0, maxY));
+    LOG_INFO("qBound new cordination{newX}, {newY}");
 
     int gridX = qRound(double(newX) / GRID_SIZE) * GRID_SIZE;
     int gridY = qRound(double(newY) / GRID_SIZE) * GRID_SIZE;
 
+    LOG_INFO("grid coordination {gridX}, {gridY}");
     int finalX = newX;
     int finalY = newY;
+
+    LOG_INFO("final coordination element: {finalX},{finalY}");
+
     QList<QLine> guides = findAlignmentGuides(element, newX, newY, finalX, finalY);
 
     if (guides.isEmpty()) {
@@ -430,6 +445,7 @@ void BoardDesignerWidget::onElementMoved(DraggableElement *element, int deltaX, 
 
     designerArea->setActiveGuides(guides);
 
+    LOG_DEBUG(QString("ВЫполнение перемещения элемента: %1").arg(element->getElementType()).arg(finalX-newX).arg(finalY-newY));
     emit layoutChanged();
 }
 
@@ -444,7 +460,12 @@ QList<QLine> BoardDesignerWidget::findAlignmentGuides(DraggableElement *element,
 
     for (auto it = placedElements.begin(); it != placedElements.end(); ++it) {
         DraggableElement *other = it.value();
-        if (other == element) continue;
+        LOG_INFO("объявление элемента DraggableElement своего значения");
+        if (other == element)
+        {
+            LOG_WARNING(QString("значение элемента DraggavleElement сооотвестувет element").arg(other->getElementType()).arg(element->getElementType()));
+            continue;
+        }
 
         QRect og = other->geometry();
 

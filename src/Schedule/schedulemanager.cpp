@@ -239,6 +239,7 @@ void ScheduleManager::save()
         obj["designPath"] = entry.designPath;
         obj["volume"] = entry.volume;
         obj["enabled"] = entry.enabled;
+        obj["isPinned"] = entry.isPinned;
 
         QJsonArray daysArray;
         for (int day : entry.days) daysArray.append(day);
@@ -284,6 +285,7 @@ void ScheduleManager::load()
         entry.designPath = obj.value("designPath").toString();
         entry.volume = obj.value("volume").toInt(80);
         entry.enabled = obj.value("enabled").toBool(true);
+        entry.isPinned = obj.value("isPinned").toBool(false);
 
         for (const auto &dayValue : obj.value("days").toArray())
             entry.days.insert(dayValue.toInt());
@@ -293,4 +295,17 @@ void ScheduleManager::load()
     }
 
     emit entriesChanged();
+}
+
+void ScheduleManager::setEntryPinned(const QString &id, bool pinned)
+{
+    for (int i = 0; i < m_entries.size(); ++i)
+    {
+        if (m_entries[i].id == id) {
+            m_entries[i].isPinned = pinned;
+            save();
+            emit entriesChanged();
+            return;
+        }
+    }
 }

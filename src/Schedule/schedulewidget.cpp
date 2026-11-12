@@ -19,6 +19,7 @@
 #include <qdatetime.h>
 #include <qfileinfo.h>
 #include <qfont.h>
+#include <qheaderview.h>
 #include <qnamespace.h>
 #include <qtablewidget.h>
 #include <algorithm>
@@ -58,9 +59,10 @@ void ScheduleWidget::setupUI()
     mainLayout->addLayout(topLayout);
 
     m_table = new QTableWidget(this);
-    m_table->setColumnCount(7);
+    m_table->setColumnCount(8);
     m_table->setHorizontalHeaderLabels({"Название", "Время", "Дни", "Звук", "Профиль", "Сообщение", "Активно"});
     m_table->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Stretch);
+    m_table->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_table->setSelectionMode(QAbstractItemView::SingleSelection);
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -126,12 +128,16 @@ void ScheduleWidget::refreshTable()
     // }
     
     std::sort(entries.begin(), entries.end(), [this](const ScheduleEntry &a, const ScheduleEntry &b) {
+        if (a.isPinned != b.isPinned) {
+            return a.isPinned > b.isPinned; 
+        }
+
         QDateTime nextA = m_manager->nextOccurrence(a);
         QDateTime nextB = m_manager->nextOccurrence(b);
 
         bool aValid = nextA.isValid();
         bool bValid = nextB.isValid();
-        if(!aValid && !bValid) return a.time < b.time;
+        if (!aValid && !bValid) return a.time < b.time;
         if (!aValid) return false;
         if (!bValid) return true;
 
@@ -166,6 +172,26 @@ void ScheduleWidget::refreshTable()
             }
         });
 
+        QCheckBox *pinnedCheck = new QCheckBox();
+        pinnedCheck->setChecked(entry.isPinned);
+        pinnedCheck->setStyleSheet("QCheckBox { margin-left: 50%; margin-right: 50%; }");
+        pinnedCheck->setToolTip("Закрепить расписание (высший приоритет)");
+        pinnedCheck->setProperty("entryId", entry.id);
+
+        connect(pinnedCheck, &QCheckBox::toggled, this, [this](bool checked) {
+            QCheckBox *cb = qobject_cast<QCheckBox*>(sender());
+            if (cb) {
+                QString id = cb->property("entryId").toString();
+                m_manager->setEntryPinned(id, checked);
+            }
+        });
+
+        QWidget *pinnedWidget = new QWidget();
+        QHBoxLayout *pinnedLayout = new QHBoxLayout(pinnedWidget);
+        pinnedLayout->addWidget(pinnedCheck);
+        pinnedLayout->setAlignment(Qt::AlignCenter);
+        pinnedLayout->setContentsMargins(0, 0, 0, 0);
+
         QWidget *checkWidget = new QWidget();
         QHBoxLayout *checkLayout = new QHBoxLayout(checkWidget);
         checkLayout->addWidget(activeCheck);
@@ -192,7 +218,9 @@ void ScheduleWidget::refreshTable()
         //m_table->setItem(row,6,enabledItem);
 
         m_table->setCellWidget(row, 6, checkWidget);
+        m_table->setCellWidget(row,7, pinnedWidget);
        }
+
 }
 
 void ScheduleWidget::onAddEntry()
